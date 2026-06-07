@@ -95,7 +95,9 @@ def compute_grade(marks):
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
+app.secret_key = os.environ.get('SECRET_KEY')
+if not app.secret_key:
+    raise ValueError("SECRET_KEY environment variable not set!")
 
 sitemapper = Sitemapper()
 
