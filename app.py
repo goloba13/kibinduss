@@ -1,6 +1,4 @@
 import os
-URL = "https://trwivebwhsvutljhsvll.supabase.co"
-KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRyd2l2ZWJ3aHN2dXRsamhzdmxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NDc2MzgsImV4cCI6MjA4OTMyMzYzOH0.9IT5SjOd1mOeDfYWTdnqe7SIIkc49aDVzF9FlJZGknY"
 from flask import Flask, render_template, send_from_directory, request, session, flash, redirect, url_for, jsonify, send_file
 from supabase import create_client #Client
 import bcrypt
