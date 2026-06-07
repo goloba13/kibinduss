@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Barua Rasmi - Tanzania | A4 Kamili (Imeorekebishwa)</title>
+    <!-- html2pdf library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f5;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 2rem 1.5rem;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .form-panel {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            padding: 1.8rem;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .preview-panel {
+            background: #f0f0f0;
+            border-radius: 16px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+            padding: 1rem;
+            position: sticky;
+            top: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .preview-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e3c5c;
+        }
+
+        .download-btn {
+            background: #1e6f3f;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .download-btn:hover {
+            background: #0f5a34;
+            transform: scale(0.97);
+        }
+
+        /* ========= UBOreshaji muhimu kwa A4 ========= */
+        .letter-preview {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 18mm 20mm 20mm 20mm;
+            margin: 0 auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            font-family: 'Times New Roman', Garamond, serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #151515;
+            border-radius: 2px;
+            box-sizing: border-box;
+            overflow-wrap: break-word;
+            /* Hakikisha hakuna overflow */
+            overflow: visible;
+        }
+        /* Hii inahakikisha maudhui yanapochapishwa hayakatiwi */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .form-panel, .preview-header button, .add-btn, .download-btn {
+                display: none;
+            }
+            .preview-panel {
+                box-shadow: none;
+                padding: 0;
+                background: white;
+            }
+            .letter-preview {
+                box-shadow: none;
+                margin: 0 auto;
+                width: 100%;
+                padding: 0;
+                /* Hakikisha hakuna margin ya ziada */
+            }
+            @page {
+                size: A4;
+                margin: 1.5cm; /* nafasi ya kutosha kwenye ukingo */
+            }
+            /* Ondoa vichwa na nyongeza */
+            header, footer {
+                display: none;
+            }
+            /* Hakikisha hakuna overflow wakati wa kuchapisha */
+            .letter-preview, .letter-preview * {
+                overflow: visible !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
+
+        /* Mitindo mingine (haijaguswa) */
+        .sender-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1.2rem;
+        }
+        .sender-content {
+            text-align: left;
+            background: #fdfdfd;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            min-width: 220px;
+            max-width: 340px;
+            border-left: 3px solid #fefdfc;
+        }
+        .sender-name-title {
+            white-space: pre-wrap;
+            margin: 0.2rem 0;
+        }
+        .sender-content p {
+            margin: 0.2rem 0;
+        }
+        .sender-date {
+            margin-top: 0.5rem;
+            font-style: italic;
+            color: #202c39;
+            border-top: 1px dashed #ccc;
+            padding-top: 0.3rem;
+        }
+
+        .recipient-section {
+            text-align: left;
+            margin-bottom: 1.2rem;
+        }
+        .recipient-block {
+            margin-bottom: 0.8rem;
+        }
+        .single-ref {
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            background: #f4f1ea;
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .kk-separator {
+            font-weight: 600;
+            color: #9b2c1d;
+            margin: 0.4rem 0 0.2rem 0;
+            font-size: 0.95rem;
+        }
+        .recipient-details .recipient-name {
+            white-space: pre-wrap;
+            margin-bottom: 0.2rem;
+        }
+        .recipient-details div {
+            margin: 0.1rem 0;
+        }
+        .yah-ref {
+            margin: 0.8rem 0 1rem 0;
+            font-weight: 500;
+            border-left: 3px solid #fdfbfb;
+            padding-left: 0.75rem;
+        }
+        .main-body {
+            margin: 1rem 0 1.5rem 0;
+            text-align: left;
+        }
+        .signature-line {
+            margin: 1.8rem 0 0.3rem 0;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+        .writer-name {
+            margin-top: 0.3rem;
+            font-weight: 500;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            margin-bottom: 1.8rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.8rem;
+        }
+        .form-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #1f3b4c;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            background: #fff;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 2px rgba(44,125,160,0.2);
+        }
+        textarea {
+            resize: vertical;
+        }
+        .recipient-card {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 20px;
+            margin-bottom: 1rem;
+            border: 1px solid #e2edf2;
+        }
+        .recipient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .remove-recipient {
+            background: #fff0f0;
+            border: none;
+            color: #b91c1c;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0.2rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+        }
+        .add-btn {
+            background: #2c7da0;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .add-btn:hover {
+            background: #1f5e7a;
+        }
+        .form-row {
+            margin-bottom: 0.7rem;
+        }
+        .form-row label {
+            font-weight: 500;
+            font-size: 0.8rem;
+            margin-bottom: 0.2rem;
+        }
+
+        @media (max-width: 1100px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+            .preview-panel {
+                position: static;
+            }
+            .letter-preview {
+                width: 100%;
+                max-width: 210mm;
+                padding: 12mm;
+            }
+        }
+ /* Rangi ya kijani kwa maandishi yote ndani ya inputs na textareas (sehemu ya fomu) */
+.form-panel input,
+.form-panel textarea {
+    color: #971009;  /* kijani kibichi cha shule */
+    font-weight: 500;
+}
+
+/* Placeholder (maandishi ya mfano) yawe ya kijivu ili yasichanganye */
+.form-panel input::placeholder,
+.form-panel textarea::placeholder {
+    color: #851e04;
+    font-weight: normal;
+}       
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="form-panel">
+        <h2 style="margin-bottom: 1rem; color: #1f5e3a;">📝 Fomu ya Barua (Tanzania)</h2>
+
+        <!-- GROUP 1: Mwandishi -->
+        <div class="form-group">
+            <label>📍 GROUP 1: Anuani ya Mwandishi + Tarehe</label>
+            <div class="form-row">
+                <label>Jina / Cheo / Mahali pa mwandishi (mistari miwili au zaidi)</label>
+                <textarea id="senderNameTitle" rows="3" placeholder="Mfano:&#10;Mkurugenzi Mtendaji (W),&#10;Halmashauri ya Wilaya ya Chalinze">Mkurugenzi Mtendaji (W)
+Halmashauri ya Wilaya ya Chalinze</textarea>
+            </div>
+            <div class="form-row">
+                <label>P.O Box ---</label>
+                <input type="text" id="senderPoBox" value="P.O. Box 3345">
+            </div>
+            <div class="form-row">
+                <label>Box la mahali gani</label>
+                <input type="text" id="senderLocation" value="Dar es Salaam">
+            </div>
+            <div class="form-row">
+                <label>📅 Tarehe</label>
+                <input type="text" id="letterDate" value="26 Aprili 2026">
+            </div>
+        </div>
+
+        <!-- GROUP 2: Mwandikiwa (dynamic) -->
+        <div class="form-group">
+            <label>👥 GROUP 2: Anuani ya Mwandikiwa (KK ikiwa zaidi ya mmoja)</label>
+            <div class="form-row">
+                <label>📌 Kumbukumbu Namba (hiari)</label>
+                <input type="text" id="singleRefNumber" value="JK/001/2026">
+                <small style="color:#5a6e7c;">✔️ Ikiachwa wazi haitaonekana kabisa.</small>
+            </div>
+            <div id="recipientsContainer"></div>
+            <button type="button" id="addRecipientBtn" class="add-btn">+ Ongeza KK</button>
+        </div>
+
+        <!-- GROUP 3: YAH -->
+        <div class="form-group">
+            <label>📑 GROUP 3: Kichwa (YAH / REF)</label>
+            <input type="text" id="refSubject" value="MAOMBI YA NAFASI YA KAZI">
+        </div>
+
+        <!-- GROUP 4: Main Body -->
+        <div class="form-group">
+            <label>✍️ GROUP 4: Ujumbe mkuu</label>
+            <textarea id="mainBody" rows="6">Ninaomba kutoa taarifa kwa …
+
+Nawasilisha maombi yangu kwa heshima.
+
+Natanguliza shukrani zangu.</textarea>
+        </div>
+
+        <!-- GROUP 5: Jina la mwandishi (sanduku kubwa) -->
+        <div class="form-group">
+            <label>🖊️ GROUP 5: Jina / cheo / maelezo ya mwandishi</label>
+            <textarea id="writerDetails" rows="5">Ahmed M. Juma
+Mkurugenzi Mtendaji</textarea>
+            <small>*Yataonekana baada ya mstari wa saini ________________</small>
+        </div>
+    </div>
+
+    <div class="preview-panel">
+        <div class="preview-header">
+            <h3>📜 Preview barua (A4)</h3>
+            <button id="downloadPdfBtn" class="download-btn">📥 Pakua PDF</button>
+        </div>
+        <div id="letterPreviewContainer" class="letter-preview"></div>
+    </div>
+</div>
+
+<script>
+    // -------------------- DATA (haijaguswa) --------------------
+    let senderData = {
+        nameTitle: "Mkurugenzi Mtendaji (W)\nHalmashauri ya Wilaya ya Chalinze",
+        poBox: "P.O. Box 3345",
+        location: "Dar es Salaam",
+        date: "26 Aprili 2026"
+    };
+    let singleReference = "JK/001/2026";
+    let recipients = [
+        { nameTitle: "Afisa Mtendaji Mkuu\n(Wizara ya Nchi)", poBox: "P.O. Box 100", location: "Dodoma" }
+    ];
+    let yahRef = "MAOMBI YA NAFASI YA KAZI";
+    let mainBodyText = `Ninaomba kutoa taarifa kwa …
+
+Nawasilisha maombi yangu kwa heshima.
+
+Natanguliza shukrani zangu.`;
+    let writerDetails = "Ahmed M. Juma\nMkurugenzi Mtendaji";
+
+    // -------------------- DOM refs (haijaguswa) --------------------
+    const senderNameTextarea = document.getElementById('senderNameTitle');
+    const senderPoBoxInput = document.getElementById('senderPoBox');
+    const senderLocationInput = document.getElementById('senderLocation');
+    const letterDateInput = document.getElementById('letterDate');
+    const singleRefInput = document.getElementById('singleRefNumber');
+    const yahInput = document.getElementById('refSubject');
+    const mainBodyTextarea = document.getElementById('mainBody');
+    const writerDetailsTextarea = document.getElementById('writerDetails');
+    const recipientsContainer = document.getElementById('recipientsContainer');
+    const addBtn = document.getElementById('addRecipientBtn');
+    const previewDiv = document.getElementById('letterPreviewContainer');
+    const downloadBtn = document.getElementById('downloadPdfBtn');
+
+    // -------------------- Helpers (haijaguswa) --------------------
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, (m) => (m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')));
+    }
+    function nl2br(str) {
+        if (!str) return '';
+        return escapeHtml(str).replace(/\n/g, '<br>');
+    }
+
+    // -------------------- Preview rendering (haijaguswa) --------------------
+    function renderPreview() {
+        if (!previewDiv) return;
+        let html = '';
+        // Sender
+        const senderNameHtml = nl2br(senderData.nameTitle) || '[Jina la mwandishi]';
+        const senderBox = escapeHtml(senderData.poBox) || '[P.O Box]';
+        const senderLoc = escapeHtml(senderData.location) || '[Mahali]';
+        const senderDate = escapeHtml(senderData.date) || '[Tarehe]';
+        html += `<div class="sender-wrapper"><div class="sender-content">
+                    <div class="sender-name-title">${senderNameHtml}</div>
+                    <p>${senderBox}</p><p>${senderLoc}</p>
+                    <div class="sender-date">${senderDate}</div>
+                </div></div>`;
+        // Recipients
+        html += `<div class="recipient-section">`;
+        if (singleReference && singleReference.trim() !== "") {
+            html += `<div class="single-ref">Kumb. Namba: ${escapeHtml(singleReference)}</div>`;
+        }
+        recipients.forEach((rec, idx) => {
+            const recNameHtml = nl2br(rec.nameTitle) || '[Jina la mwandikiwa]';
+            const recPo = escapeHtml(rec.poBox) || '[P.O. Box ---]';
+            const recLoc = escapeHtml(rec.location) || '[Mahali]';
+            if (idx > 0) html += `<div class="kk-separator">KK </div>`;
+            html += `<div class="recipient-block"><div class="recipient-details">
+                        <div class="recipient-name">${recNameHtml}</div>
+                        <div>${recPo}</div><div>${recLoc}</div>
+                    </div></div>`;
+        });
+        html += `</div>`;
+        // YAH
+        html += `<div class="yah-ref"><strong>YAH:</strong> ${escapeHtml(yahRef) || '[Taja rejea]'}</div>`;
+        // Main body
+        html += `<div class="main-body">${nl2br(mainBodyText)}</div>`;
+        // Signature & writer
+        html += `<div class="signature-line">________________</div>`;
+        html += `<div class="writer-name">${nl2br(writerDetails)}</div>`;
+        previewDiv.innerHTML = html;
+    }
+
+    // -------------------- Update functions --------------------
+    function updateSender() {
+        senderData.nameTitle = senderNameTextarea.value;
+        senderData.poBox = senderPoBoxInput.value;
+        senderData.location = senderLocationInput.value;
+        senderData.date = letterDateInput.value;
+        renderPreview();
+    }
+    function updateSingleReference() { singleReference = singleRefInput.value; renderPreview(); }
+    function updateYah() { yahRef = yahInput.value; renderPreview(); }
+    function updateMainBody() { mainBodyText = mainBodyTextarea.value; renderPreview(); }
+    function updateWriterDetails() { writerDetails = writerDetailsTextarea.value; renderPreview(); }
+
+    // -------------------- Recipients dynamic form --------------------
+    function buildRecipientsForm() {
+        if (!recipientsContainer) return;
+        recipientsContainer.innerHTML = '';
+        recipients.forEach((recip, idx) => {
+            const card = document.createElement('div');
+            card.className = 'recipient-card';
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'recipient-header';
+            headerDiv.innerHTML = `<span>📬 Mwandikiwa ${idx+1}</span>${recipients.length > 1 ? `<button class="remove-recipient" data-index="${idx}">✖ Ondoa</button>` : ''}`;
+            card.appendChild(headerDiv);
+            // Cheo/Jina
+            const nameDiv = createFieldRowTextarea('Cheo / Jina la mwandishi (mistari miwili au zaidi)', recip.nameTitle, (val) => {
+                recip.nameTitle = val;
+                renderPreview();
+            }, 3);
+            // P.O. Box
+            const poDiv = createFieldRowInput('P.o. Box ---', recip.poBox, (val) => {
+                recip.poBox = val;
+                renderPreview();
+            });
+            // Mahali
+            const locDiv = createFieldRowInput('Mahali Box linapatikana', recip.location, (val) => {
+                recip.location = val;
+                renderPreview();
+            });
+            card.appendChild(nameDiv);
+            card.appendChild(poDiv);
+            card.appendChild(locDiv);
+            recipientsContainer.appendChild(card);
+        });
+        document.querySelectorAll('.remove-recipient').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(btn.getAttribute('data-index'));
+                if (!isNaN(idx) && recipients.length > 1) {
+                    recipients.splice(idx, 1);
+                    buildRecipientsForm();
+                    renderPreview();
+                }
+            });
+        });
+    }
+    function createFieldRowInput(labelText, currentValue, onInputHandler) {
+        const div = document.createElement('div');
+        div.className = 'form-row';
+        const label = document.createElement('label');
+        label.innerText = labelText;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentValue || '';
+        input.addEventListener('input', (e) => {
+            onInputHandler(e.target.value);
+        });
+        div.appendChild(label);
+        div.appendChild(input);
+        return div;
+    }
+    function createFieldRowTextarea(labelText, currentValue, onInputHandler, rows = 2) {
+        const div = document.createElement('div');
+        div.className = 'form-row';
+        const label = document.createElement('label');
+        label.innerText = labelText;
+        const textarea = document.createElement('textarea');
+        textarea.rows = rows;
+        textarea.value = currentValue || '';
+        textarea.addEventListener('input', (e) => {
+            onInputHandler(e.target.value);
+        });
+        div.appendChild(label);
+        div.appendChild(textarea);
+        return div;
+    }
+    function addNewRecipient() {
+        recipients.push({ nameTitle: "", poBox: "", location: "" });
+        buildRecipientsForm();
+        renderPreview();
+    }
+
+    // -------------------- Bind events --------------------
+    function bindStaticEvents() {
+        senderNameTextarea.addEventListener('input', updateSender);
+        senderPoBoxInput.addEventListener('input', updateSender);
+        senderLocationInput.addEventListener('input', updateSender);
+        letterDateInput.addEventListener('input', updateSender);
+        singleRefInput.addEventListener('input', updateSingleReference);
+        yahInput.addEventListener('input', updateYah);
+        mainBodyTextarea.addEventListener('input', updateMainBody);
+        writerDetailsTextarea.addEventListener('input', updateWriterDetails);
+        addBtn.addEventListener('click', addNewRecipient);
+    }
+
+    function syncInitialFromDOM() {
+        senderData.nameTitle = senderNameTextarea.value;
+        senderData.poBox = senderPoBoxInput.value;
+        senderData.location = senderLocationInput.value;
+        senderData.date = letterDateInput.value;
+        singleReference = singleRefInput.value;
+        yahRef = yahInput.value;
+        mainBodyText = mainBodyTextarea.value;
+        writerDetails = writerDetailsTextarea.value;
+    }
+
+    // -------------------- PDF Download (ILIREKEBISHWA) --------------------
+    function downloadPDF() {
+        const element = document.getElementById('letterPreviewContainer');
+        // Chaguo zilizoboreshwa – hakuna kukatwa tena
+        const opt = {
+            margin: [0.4, 0.4, 0.4, 0.4],   // inchi: nafasi ya kutosha ukingoni
+            filename: 'barua_rasmi_tanzania.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, letterRendering: true, useCORS: false, logging: false },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
+    }
+
+    // -------------------- Initialization --------------------
+    function init() {
+        bindStaticEvents();
+        syncInitialFromDOM();
+        buildRecipientsForm();
+        renderPreview();
+        downloadBtn.addEventListener('click', downloadPDF);
+    }
+    init();
+</script>
+</body>
+</html>

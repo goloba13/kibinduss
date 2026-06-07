@@ -1,0 +1,208 @@
+{% extends "academic_base.html" %}
+{% block title %}Ongeza Mwanafunzi Mpya{% endblock %}
+{% block extra_css %}
+<style>
+    .form-container, .latest-container, .upload-container {
+        max-width: 800px;
+        margin: 1.5rem auto;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 24px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+    h2, h3 {
+        color: #1e4a3d;
+        border-left: 5px solid #1e4a3d;
+        padding-left: 1rem;
+        margin-bottom: 1.2rem;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    label {
+        font-weight: 600;
+        color: #1e4a3d;
+        display: block;
+        margin-bottom: 0.4rem;
+    }
+    input, select {
+        width: 100%;
+        padding: 0.6rem 0.8rem;
+        border: 1px solid #ced4da;
+        border-radius: 12px;
+        font-size: 0.95rem;
+    }
+    input:focus, select:focus {
+        border-color: #1e4a3d;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(30,74,61,0.1);
+    }
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    .checkbox-group input {
+        width: auto;
+    }
+    button {
+        background: none;
+        color: #14722e;
+        border-color: #14722e;
+        border: 3px solid #14722e;
+        padding: 0.7rem 1.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        width: auto;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: 0.2s;
+        width: 100%;
+    }
+    button:hover {
+        background: #14722e;
+        transform: translateY(-1px);
+        color: #fefefe;
+    }
+    
+    .alert {
+        padding: 0.8rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+    .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .latest-card {
+        background: #e9f0ed;
+        border-radius: 16px;
+        padding: 1rem;
+        text-align: center;
+    }
+    .latest-card p { margin: 0.3rem 0; }
+    .upload-area {
+        border: 2px dashed #1e4a3d;
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        background: #fef9e6;
+    }
+    @media (max-width: 680px) {
+        .form-container, .latest-container, .upload-container { padding: 1rem; margin: 1rem; }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="form-container">
+    <h2>Ongeza Mwanafunzi Mmoja</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="post" action="{{ url_for('add_student') }}">
+        <div class="form-group">
+            <label>Jina kamili *</label>
+            <input type="text" name="student_name" required>
+        </div>
+        <div class="form-group">
+            <label>Jinsia *</label>
+            <select name="sex" required>
+                <option value="">-- Chagua --</option>
+                <option value="M">Male (M)</option>
+                <option value="F">Female (F)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Kidato cha sasa *</label>
+            <select name="current_class" required>
+                <option value="">-- Chagua --</option>
+                <option value="Form1">Form1</option>
+                <option value="Form2">Form2</option>
+                <option value="Form3">Form3</option>
+                <option value="Form4">Form4</option>
+                <option value="Form5">Form5</option>
+                <option value="Form6">Form6</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Namba ya simu ya mzazi </label>
+            <input type="tel" name="parent_phone" placeholder="0712345678">
+        </div>
+        <div class="form-group">
+            <label>Mkondo (Stream)</label>
+            <input type="text" name="stream" placeholder="e.g. A, B, C, East, West">
+        </div>
+        <div class="form-group">
+            <label>Mwaka wa kujiunga</label>
+            <input type="number" name="admission_year" value="{{ current_year }}" min="2000" max="2030">
+        </div>
+        <div class="form-group checkbox-group">
+            <input type="checkbox" name="is_active" id="is_active" checked>
+            <label for="is_active" style="margin-bottom:0;">Active (Anasoma)</label>
+        </div>
+        <button type="submit"> Hifadhi</button>
+    </form>
+</div>
+
+<!-- Container ya mwanafunzi wa mwisho -->
+<div class="latest-container">
+    <h3>🆕 Resent Student</h3>
+    <div id="latestStudentCard" class="latest-card">
+        <p>Inapakia...</p>
+    </div>
+</div>
+
+<!-- Container ya Upload Excel -->
+<div class="upload-container">
+    <h3>📂 Ongeza kwa wingi (Excel)</h3>
+    <form id="uploadExcelForm" method="post" enctype="multipart/form-data" action="{{ url_for('upload_students_excel') }}">
+        <div class="upload-area">
+            <a href="{{ url_for('download_excel_template') }}" class="btn btn-secondary mb-2" style="background: #17a2b8; color: white; text-decoration: none; display: inline-block; padding: 0.5rem 1rem; border-radius: 4px;">📥 Pakua Template ya Excel</a>
+            <input type="file" name="excel_file" accept=".xlsx, .xls" required>
+            <p class="mt-2 text-muted">Jina la sheet liwe jina la kidato (e.g., Form4). Safu ya kwanza: student_name, sex, parent_phone, stream, admission_year, is_active</p>
+            <button type="submit" class="btn btn-success mt-2" style="background: none; width: auto;">Upload excel</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Fetch latest student on page load and after any successful addition
+    async function fetchLatestStudent() {
+        try {
+            const response = await fetch('/api/latest-student');
+            const data = await response.json();
+            const card = document.getElementById('latestStudentCard');
+            if (response.ok && !data.error) {
+                card.innerHTML = `
+                    <p><strong>${escapeHtml(data.student_name)}</strong> (ID: ${data.id})</p>
+                    <p>Kidato: ${escapeHtml(data.current_class)} | Mwaka: ${data.admission_year || '?'}</p>
+                `;
+
+            } else {
+                card.innerHTML = `<p class="text-muted">${data.error || 'Hakuna mwanafunzi bado'}</p>`;
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById('latestStudentCard').innerHTML = '<p class="text-danger">Imeshindwa kupata data</p>';
+        }
+    }
+
+    // After submitting the main form (single student) or upload, we reload the page to refresh latest.
+    // You can also use AJAX for upload, but for simplicity we keep plain form posting.
+    // A successful POST will cause page reload, and fetchLatestStudent will run again on load.
+    
+    // Optional: For upload form, we can intercept and handle with fetch to avoid page reload?
+    // But keeping simple: after upload redirects back to same page.
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+    }
+    
+    // Call when page loads
+    fetchLatestStudent();
+</script>
+{% endblock %}

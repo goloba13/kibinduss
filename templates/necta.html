@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NECTA Matokeo Scraper</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #2c3e70;
+            color: white;
+            padding: 20px 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        .form-card {
+            padding: 25px 30px;
+            background: #f9fafc;
+            border-bottom: 1px solid #ddd;
+        }
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+        }
+        .field {
+            flex: 1;
+            min-width: 150px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1e2a3e;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: #2c3e70;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(44,62,112,0.2);
+        }
+        button {
+            background: #2c3e70;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 22px;
+        }
+        button:hover {
+            background: #1e2a4a;
+            transform: scale(0.98);
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2rem;
+            color: #2c3e70;
+        }
+        .result-area {
+            padding: 25px 30px;
+        }
+        .stats {
+            background: #eef2ff;
+            border-radius: 16px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #e9ecef;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .subject-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .subject-badge {
+            background: #e2e3e8;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .error-msg {
+            background: #ffe6e5;
+            color: #b00020;
+            padding: 15px;
+            border-radius: 14px;
+            border-left: 6px solid #b00020;
+        }
+        footer {
+            background: #f1f3f7;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.8rem;
+            color: #555;
+        }
+        @media (max-width: 700px) {
+            .form-group { flex-direction: column; align-items: stretch; }
+            button { margin-top: 5px; }
+            th, td { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📊 NECTA Matokeo</h1>
+        <p>Chambua matokeo ya Kidato cha Nne (CSEE) au Kidato cha Pili (FTNA)</p>
+    </div>
+    <div class="form-card">
+        <div class="form-group">
+            <div class="field">
+                <label>🏫 Namba ya Kituo</label>
+                <input type="text" id="center" placeholder="S3177" value="S3177">
+            </div>
+            <div class="field">
+                <label>📘 Kidato</label>
+                <select id="form">
+                    <option value="csee">Kidato cha Nne (CSEE)</option>
+                    <option value="ftna">Kidato cha Pili (FTNA)</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>📅 Mwaka</label>
+                <select id="year">
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+            </div>
+            <div class="field">
+                <button id="scrapeBtn">🔍 Chambua Matokeo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading" class="loading">⏳ Inachakata......</div>
+    <div id="resultContainer" class="result-area"></div>
+    <footer>Data inachukuliwa kutoka onlinesys.necta.go.tz</footer>
+</div>
+
+<script>
+    const centerInput = document.getElementById('center');
+    const formSelect = document.getElementById('form');
+    const yearSelect = document.getElementById('year');
+    const scrapeBtn = document.getElementById('scrapeBtn');
+    const loadingDiv = document.getElementById('loading');
+    const resultContainer = document.getElementById('resultContainer');
+
+    scrapeBtn.addEventListener('click', async () => {
+        const center = centerInput.value.trim();
+        const form = formSelect.value;
+        const year = yearSelect.value;
+
+        if (!center) {
+            showError('Tafadhali ingiza namba ya kituo.');
+            return;
+        }
+
+        // Onyesha loading, ficha matokeo ya awali
+        loadingDiv.style.display = 'block';
+        resultContainer.innerHTML = '';
+
+        try {
+            // Badilisha endpoint ikiwa API yako iko kwenye route tofauti
+            // Hapa tunadhani route yako ni /api/necta/results kama nilivyopendekeza
+            const apiUrl = `/api/necta/results?center=${encodeURIComponent(center)}&form=${form}&year=${year}`;
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            if (!response.ok) {
+                showError(data.error || 'Hitilafu ya upande wa server.');
+                return;
+            }
+
+            // Ikiwa hakuna wanafunzi lakini kuna ujumbe (kama ukurasa upo bila data)
+            if (data.total_students === 0 || (data.message && !data.students?.length)) {
+                showWarning(`Hakuna wanafunzi waliopatikana kwa kituo ${center}. <br> URL: ${data.url || ''}<br> Angalia mwaka au kituo.`);
+                if (data.html_sample) {
+                    resultContainer.innerHTML += `<details><summary>Onyesha sampuli ya HTML</summary><pre style="background:#eee;padding:10px;font-size:11px;overflow:auto;">${escapeHtml(data.html_sample)}</pre></details>`;
+                }
+                return;
+            }
+
+            // Onyesha matokeo
+            renderResults(data);
+
+        } catch (err) {
+            showError('Kosa la mtandao: ' + err.message);
+        } finally {
+            loadingDiv.style.display = 'none';
+        }
+    });
+
+    function renderResults(data) {
+        const students = data.students || [];
+        const total = data.total_students;
+        const formLabel = data.form === 'CSEE' ? 'Kidato cha Nne' : 'Kidato cha Pili';
+
+        let html = `<div class="stats">
+                        📍 Kituo: <strong>${escapeHtml(data.center)}</strong> &nbsp; | &nbsp;
+                        📚 ${formLabel} (${data.form}) &nbsp; | &nbsp;
+                        🗓️ Mwaka: ${data.year} &nbsp; | &nbsp;
+                        👩‍🎓 Jumla ya wanafunzi: ${total}
+                    </div>`;
+
+        if (total === 0) {
+            html += `<div class="error-msg">⚠️ Hakuna data ya wanafunzi ilipatikana.</div>`;
+            resultContainer.innerHTML = html;
+            return;
+        }
+
+        html += `<div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr><th>Namba ya mtihani</th><th>Jinsia</th><th>Masomo na Alama</th></tr>
+                        </thead>
+                        <tbody>`;
+        for (const s of students) {
+            const subjects = s.subjects || {};
+            const subjectEntries = Object.entries(subjects);
+            let subjectsHtml = '';
+            if (subjectEntries.length === 0) {
+                subjectsHtml = '<span style="color:gray;">Hakuna masomo yaliyochambuliwa</span>';
+            } else {
+                subjectsHtml = '<div class="subject-list">';
+                for (const [subj, grade] of subjectEntries) {
+                    subjectsHtml += `<span class="subject-badge">${escapeHtml(subj)}: ${escapeHtml(grade)}</span>`;
+                }
+                subjectsHtml += '</div>';
+            }
+            html += `<tr>
+                        <td>${escapeHtml(s.student_id)}</td>
+                        <td>${escapeHtml(s.gender)}</td>
+                        <td>${subjectsHtml}</td>
+                     </tr>`;
+        }
+        html += `</tbody></table></div>`;
+        resultContainer.innerHTML = html;
+    }
+
+    function showError(msg) {
+        resultContainer.innerHTML = `<div class="error-msg">❌ ${escapeHtml(msg)}</div>`;
+    }
+
+    function showWarning(msg) {
+        resultContainer.innerHTML = `<div class="error-msg" style="background:#fff3e0; border-left-color:#e67e22;">⚠️ ${msg}</div>`;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+</script>
+</body>
+</html>

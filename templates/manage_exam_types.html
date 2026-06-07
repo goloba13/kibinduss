@@ -1,0 +1,348 @@
+{% extends "academic_base.html" %}
+{% block title %}Simamia Aina za Mitihani{% endblock %}
+{% block extra_css %}
+<style>
+    .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+    h2 { color: #1e4a3d; font-weight: 700; margin-bottom: 1rem; border-left: 5px solid #1e4a3d; padding-left: 1rem; }
+    p { color: #555; margin-bottom: 1.5rem; }
+    .table-responsive { overflow-x: auto; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); background: white; }
+    .table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .table thead th { background: linear-gradient(135deg, #1e4a3d, #0f2c23); color: white; padding: 0.9rem 1rem; text-align: left; font-weight: 700; border-bottom: 2px solid #2c6e5c; }
+    .table tbody td { padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0; color: #1a2c2e; vertical-align: middle; }
+    .table tbody tr:nth-child(even) { background-color: #f8fafc; }
+    .table tbody tr:hover { background-color: #eef2f5; transition: background 0.2s ease; }
+    .form-check-input { width: 1.2rem; height: 1.2rem; cursor: pointer; accent-color: #1e4a3d; margin: 0; }
+    .text-center { text-align: center; }
+    .btn-primary { background: #1e4a3d; border: none; padding: 0.6rem 1.5rem; border-radius: 40px; font-weight: 600; color: white; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
+    .btn-primary:hover { background: #0f2c23; transform: translateY(-1px); }
+    .btn-success { background: #28a745; border: none; padding: 0.6rem 1.5rem; border-radius: 40px; font-weight: 600; color: white; cursor: pointer; transition: 0.2s; font-size: 0.9rem; margin-left: 0.5rem; }
+    .btn-success:hover { background: #218838; transform: translateY(-1px); }
+    .btn-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        margin: 0 3px;
+        transition: 0.2s;
+    }
+    .btn-icon.edit { color: #2196F3; }
+    .btn-icon.edit:hover { color: #0b5e9e; transform: scale(1.1); }
+    .btn-icon.delete { color: #f44336; }
+    .btn-icon.delete:hover { color: #c62828; transform: scale(1.1); }
+    .add-section { background: #f8fafc; border-radius: 20px; padding: 1.2rem; margin-bottom: 2rem; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; }
+    .add-section .form-group { flex: 2; min-width: 200px; }
+    .add-section label { font-weight: 600; margin-bottom: 0.3rem; color: #1e4a3d; }
+    .add-section input { width: 100%; padding: 0.5rem 0.7rem; border: 1px solid #ccc; border-radius: 12px; }
+    #statusMsg { font-size: 0.9rem; font-weight: 500; margin-left: 1rem; }
+    .modal-custom {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    .modal-custom.active { display: flex; }
+    .modal-content-custom {
+        background: white;
+        padding: 20px;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 450px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    .close-modal { cursor: pointer; font-size: 1.5rem; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+    .form-group input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ccc; }
+    @media (max-width: 768px) {
+        .table thead th, .table tbody td { padding: 0.5rem 0.6rem; font-size: 0.75rem; }
+        h2 { font-size: 1.4rem; }
+        .btn-primary, .btn-success { padding: 0.4rem 1rem; font-size: 0.8rem; }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Simamia Aina za Mitihani</h2>
+    <p>Badilisha hali ya <code>is_done</code> na <code>is_allowed_view</code>. Unaweza pia kuongeza, kuhariri au kufuta aina za mitihani.</p>
+
+    <!-- ADD NEW EXAM TYPE -->
+    <div class="add-section">
+        <div class="form-group">
+            <label>Jina la Mtihani Mpya</label>
+            <input type="text" id="newExamName" class="form-control" placeholder="e.g., MOCK, PRE-NECTA, MIDTERM">
+        </div>
+        <div>
+            <button id="addExamBtn" class="btn-success">➕ Ongeza Mtihani</button>
+        </div>
+    </div>
+
+    <!-- EXISTING EXAMS TABLE -->
+    <form id="examTypesForm">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Jina la Mtihani</th>
+                        <th>is_done</th>
+                        <th>is_allowed_view</th>
+                        <th>Vitendo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exam in exam_types %}
+                    <tr data-id="{{ exam.id }}">
+                        <td>{{ exam.id }}</td>
+                        <td class="exam-name">{{ exam.exam_name }}</td>
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input is-done-checkbox" 
+                                   {% if exam.is_done %}checked{% endif %}>
+                        </td>
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input is-allowed-checkbox" 
+                                   {% if exam.is_allowed_view %}checked{% endif %}>
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn-icon edit" data-id="{{ exam.id }}" data-name="{{ exam.exam_name }}" title="Hariri jina">
+                                ✏️
+                            </button>
+                            <button type="button" class="btn-icon delete" data-id="{{ exam.id }}" data-name="{{ exam.exam_name }}" title="Futa aina ya mtihani">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-3">
+            <button type="submit" class="btn-primary">💾 Hifadhi Mabadiliko (Checkbox)</button>
+            <span id="statusMsg" class="ms-3"></span>
+        </div>
+    </form>
+</div>
+
+<!-- Modal ya kuhariri jina la mtihani -->
+<div id="editExamModal" class="modal-custom">
+    <div class="modal-content-custom">
+        <div class="modal-header">
+            <span>Hariri Jina la Mtihani</span>
+            <span class="close-modal" onclick="closeEditModal()">&times;</span>
+        </div>
+        <form id="editExamForm">
+            <input type="hidden" id="editExamId">
+            <div class="form-group">
+                <label>Jina Jipya</label>
+                <input type="text" id="editExamName" required>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-success" style="background:#2196F3;">Hifadhi</button>
+                <button type="button" class="btn-primary" onclick="closeEditModal()" style="background:#aaa;">Ghairi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- UPDATE EXISTING (CHECKBOXES) -----
+        const form = document.getElementById('examTypesForm');
+        const statusSpan = document.getElementById('statusMsg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const rows = document.querySelectorAll('tbody tr');
+            const updates = [];
+            rows.forEach(row => {
+                const id = parseInt(row.dataset.id);
+                const isDone = row.querySelector('.is-done-checkbox').checked;
+                const isAllowed = row.querySelector('.is-allowed-checkbox').checked;
+                updates.push({ id, is_done: isDone, is_allowed_view: isAllowed });
+            });
+            statusSpan.innerHTML = '<span class="text-info">Inahifadhi...</span>';
+            try {
+                const response = await fetch('/manage-exam-types', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ updates: updates })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    statusSpan.innerHTML = '<span class="text-success">✅ Mabadiliko yamehifadhiwa.</span>';
+                    setTimeout(() => statusSpan.innerHTML = '', 3000);
+                } else {
+                    statusSpan.innerHTML = `<span class="text-danger">❌ Hitilafu: ${data.error}</span>`;
+                }
+            } catch (err) {
+                statusSpan.innerHTML = `<span class="text-danger">❌ Kosa la mtandao: ${err.message}</span>`;
+            }
+        });
+
+        // ----- ADD NEW EXAM TYPE -----
+        const addBtn = document.getElementById('addExamBtn');
+        const newExamInput = document.getElementById('newExamName');
+
+        addBtn.addEventListener('click', async () => {
+            const examName = newExamInput.value.trim();
+            if (!examName) {
+                alert('Tafadhali ingiza jina la mtihani.');
+                return;
+            }
+            addBtn.disabled = true;
+            addBtn.textContent = 'Inaongeza...';
+            try {
+                const response = await fetch('/add-exam-type', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exam_name: examName })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('✅ Mtihani umeongezwa kikamilifu!');
+                    window.location.reload();
+                } else {
+                    alert('❌ Hitilafu: ' + (data.error || 'Jaribu tena'));
+                }
+            } catch (err) {
+                alert('❌ Kosa la mtandao: ' + err.message);
+            } finally {
+                addBtn.disabled = false;
+                addBtn.textContent = '➕ Ongeza Mtihani';
+            }
+        });
+
+        // ----- EDIT EXAM TYPE (Modal) -----
+        const editModal = document.getElementById('editExamModal');
+        let currentEditId = null;
+
+        function openEditModal(id, currentName) {
+            currentEditId = id;
+            document.getElementById('editExamId').value = id;
+            document.getElementById('editExamName').value = currentName;
+            editModal.classList.add('active');
+        }
+
+        function closeEditModal() {
+            editModal.classList.remove('active');
+            currentEditId = null;
+        }
+
+        // Attach edit buttons
+        document.querySelectorAll('.btn-icon.edit').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const name = btn.getAttribute('data-name');
+                if (!id) {
+                    alert("Kitambulisho hakipo.");
+                    return;
+                }
+                openEditModal(id, name);
+            });
+        });
+
+        // Submit edit form
+        document.getElementById('editExamForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editExamId').value;
+            const newName = document.getElementById('editExamName').value.trim();
+            if (!newName) {
+                alert("Jina la mtihani haliwezi kuwa tupu.");
+                return;
+            }
+            try {
+                const response = await fetch('/edit-exam-type', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id, exam_name: newName })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert(data.message);
+                    // Update the cell in table
+                    const row = document.querySelector(`tr[data-id="${id}"]`);
+                    if (row) {
+                        row.querySelector('.exam-name').innerText = newName;
+                        // Update the edit button's data-name attribute
+                        const editBtn = row.querySelector('.btn-icon.edit');
+                        if (editBtn) editBtn.setAttribute('data-name', newName);
+                    }
+                    closeEditModal();
+                } else {
+                    alert('❌ Hitilafu: ' + (data.error || 'Jaribu tena'));
+                }
+            } catch (err) {
+                alert('❌ Kosa la mtandao: ' + err.message);
+            }
+        });
+
+        // ----- DELETE EXAM TYPE with Cascade (also deletes exam_registrations and marks) -----
+        async function deleteExamType(id, examName, row) {
+            if (!confirm(`Je, una uhakika unataka kufuta kabisa aina ya mtihani "${examName}"?\n\nHii itafuta pia usajili wote wa mitihani na alama zilizopo kwa mtihani huu. Haiwezi kutenduliwa.`)) {
+                return;
+            }
+            // disable delete button temporarily
+            const deleteBtn = row.querySelector('.btn-icon.delete');
+            const originalText = deleteBtn.innerHTML;
+            deleteBtn.disabled = true;
+            deleteBtn.style.opacity = '0.5';
+            try {
+                const response = await fetch('/delete-exam-type', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert(`✅ Aina ya mtihani "${examName}" imefutwa pamoja na data zote zinazohusiana.`);
+                    row.remove();
+                    // If no rows left, show message
+                    if (document.querySelectorAll('tbody tr').length === 0) {
+                        const tbody = document.querySelector('tbody');
+                        tbody.innerHTML = '</td><td colspan="5" class="text-center">Hakuna mitihani. Tafadhali ongeza.</td></tr>';
+                    }
+                } else {
+                    alert('❌ Hitilafu: ' + (data.error || 'Jaribu tena'));
+                    deleteBtn.disabled = false;
+                    deleteBtn.style.opacity = '1';
+                }
+            } catch (err) {
+                alert('❌ Kosa la mtandao: ' + err.message);
+                deleteBtn.disabled = false;
+                deleteBtn.style.opacity = '1';
+            }
+        }
+
+        // Attach delete buttons
+        document.querySelectorAll('.btn-icon.delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const name = btn.getAttribute('data-name');
+                const row = btn.closest('tr');
+                if (!id) {
+                    alert("Kitambulisho hakipo.");
+                    return;
+                }
+                deleteExamType(id, name, row);
+            });
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target === editModal) closeEditModal();
+        };
+    })();
+</script>
+{% endblock %}

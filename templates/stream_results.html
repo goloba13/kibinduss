@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Matokeo kwa Darasa na Stream - KIBINDU{% endblock %}
+{% block extra_css %}
+<style>
+    .filter-panel {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .filter-panel select, .filter-panel button {
+        padding: 0.6rem 1rem;
+        border-radius: 12px;
+        border: 1px solid #ccc;
+    }
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 16px;
+        overflow-x: auto;
+        display: block;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .results-table th, .results-table td {
+        border: 1px solid #e2e8f0;
+        padding: 0.5rem;
+        text-align: left;
+        font-size: 0.85rem;
+    }
+    .results-table th {
+        background: #1e4a3d;
+        color: white;
+        position: sticky;
+        top: 0;
+    }
+    .badge-division {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-weight: bold;
+    }
+    .div-I { background: #2ecc71; color: white; }
+    .div-II { background: #27ae60; color: white; }
+    .div-III { background: #f39c12; color: white; }
+    .div-IV { background: #e67e22; color: white; }
+    .div-0 { background: #e74c3c; color: white; }
+    .student-count {
+        margin: 1rem 0;
+        font-weight: bold;
+    }
+    @media (max-width: 768px) {
+        .results-table th, .results-table td { font-size: 0.7rem; padding: 0.3rem; }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <h1>Matokeo ya Wanafunzi kwa Darasa na Stream</h1>
+    
+    <div class="filter-panel">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+            <div>
+                <label>Aina ya Mtihani</label>
+                <select id="examSelect">
+                    <option value="">--Chagua--</option>
+                    {% for exam in exam_types %}
+                    <option value="{{ exam.id }}">{{ exam.exam_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Kidato</label>
+                <select id="classSelect">
+                    <option value="">--Chagua--</option>
+                    {% for c in classes %}
+                    <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Stream</label>
+                <select id="streamSelect">
+                    <option value="all">Stream Zote</option>
+                    {% for s in streams %}
+                    <option value="{{ s }}">{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button id="loadBtn" class="btn" style="width: auto;">🔍 Tafuta Matokeo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading" style="display: none; text-align: center; padding: 2rem;">Inapakia...</div>
+    <div id="countDisplay" class="student-count"></div>
+    <div id="tableContainer" style="overflow-x: auto;"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    document.getElementById('loadBtn').addEventListener('click', async () => {
+        const examId = document.getElementById('examSelect').value;
+        const className = document.getElementById('classSelect').value;
+        const stream = document.getElementById('streamSelect').value;
+        
+        if (!examId || !className) {
+            alert('Tafadhali chagua aina ya mtihani na kidato.');
+            return;
+        }
+        
+        const loading = document.getElementById('loading');
+        const container = document.getElementById('tableContainer');
+        const countDisplay = document.getElementById('countDisplay');
+        
+        loading.style.display = 'block';
+        container.innerHTML = '';
+        countDisplay.innerHTML = '';
+        
+        try {
+            const response = await fetch('/api/stream-results', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exam_type_id: examId, class: className, stream: stream })
+            });
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            
+            if (!data.length) {
+                container.innerHTML = '<p class="text-muted">Hakuna wanafunzi waliopata alama kwa mtihani huu katika darasa/stream ulilochagua.</p>';
+                countDisplay.innerHTML = '';
+                return;
+            }
+            
+            countDisplay.innerHTML = `<strong>Wanafunzi waliojitokeza:</strong> ${data.length}`;
+            
+            let allSubjects = new Set();
+            data.forEach(student => {
+                student.subjects.forEach(subj => {
+                    allSubjects.add(subj.subject);
+                });
+            });
+            const subjectsList = Array.from(allSubjects).sort();
+            
+            let html = '<table class="results-table"><thead><tr>';
+            html += '<th>#</th><th>Jina la Mwanafunzi</th><th>Jinsia</th>';
+            subjectsList.forEach(sub => {
+                html += `<th>${sub}<br><small>(Alama/Pointi)</small></th>`;
+            });
+            html += '<th>Jumla ya Pointi</th><th>Daraja (Division)</th></td></thead><tbody>';
+            
+            data.forEach((student, idx) => {
+                const divisionClass = `div-${student.division}`;
+                html += `<tr>
+                    <td>${idx+1}</td>
+                    <td>${escapeHtml(student.student_name)}</td>
+                    <td>${student.sex || '-'}</td>`;
+                
+                subjectsList.forEach(sub => {
+                    const found = student.subjects.find(s => s.subject === sub);
+                    if (found && found.marks > 0) {
+                        html += `<td>${found.marks} / ${found.point}</td>`;
+                    } else {
+                        html += `<td class="text-muted">-</td>`;
+                    }
+                });
+                html += `<td>${student.total_points}</td>
+                          <td><span class="badge-division ${divisionClass}">${student.division}</span></td>
+                      </tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            
+        } catch (err) {
+            container.innerHTML = `<p class="text-danger">Hitilafu: ${err.message}</p>`;
+        } finally {
+            loading.style.display = 'none';
+        }
+    });
+    
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base2.html" %}
+{% block title %}Historia ya Ripoti za Zamu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-form {
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-end;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .filter-form .form-group {
+        min-width: 200px;
+    }
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    .history-table th, .history-table td {
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+        text-align: left;
+        vertical-align: middle;
+    }
+    .history-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    .btn-view {
+        background-color: #17a2b8;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 30px;
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+    .btn-view:hover {
+        background-color: #138496;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>DUTY HISTORY</h2>
+    
+    <!-- Form ya kuchuja kwa mwalimu -->
+    <form method="get" action="{{ url_for('duty_history') }}" class="filter-form">
+        <div class="form-group">
+            <label for="teacherSelect">Choose teacher:</label>
+            <select name="teacher_id" id="teacherSelect" class="form-select" onchange="this.form.submit()">
+                <option value="all" {% if selected_teacher == 'all' %}selected{% endif %}>All teachers</option>
+                {% for teacher in teachers %}
+                <option value="{{ teacher.id }}" {% if selected_teacher|string == teacher.id|string %}selected{% endif %}>
+                    {{ teacher.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if reports %}
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Report Date</th>
+                <th>T.O.D Name</th>
+                <th>Saved By</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td>{{ report.report_date }}</td>
+                <td>{{ report.tod_name }}</td>
+                <td>{{ report.saved_by }}</td>
+                <td>
+                    <a href="/view-report?date={{ report.report_date }}" class="btn-view">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Hakuna ripoti zilizohifadhiwa kwa chaguo hili.</p>
+    {% endif %}
+</div>
+{% endblock %}

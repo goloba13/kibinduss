@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Plan Studio | KIBINDU</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: #f4f7fc;
+            font-family: 'Segoe UI', system-ui, -apple-system, 'Inter', sans-serif;
+        }
+        .form-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .form-header {
+            background: #2c3e50;
+            color: white;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 4px solid #3498db;
+        }
+        .form-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .form-section {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eef2f6;
+        }
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            color: #2c3e50;
+            border-left: 4px solid #3498db;
+            padding-left: 12px;
+        }
+        .required-star::after {
+            content: "*";
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+        .preview-card {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stage-item {
+            background: #f8fafc;
+            border-left: 3px solid #3498db;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+        }
+        .badge-time {
+            background: #e9ecef;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .btn-ai {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-ai:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        .btn-save {
+            background: #27ae60;
+        }
+        .btn-save:hover {
+            background: #219653;
+        }
+        .required-marker {
+            color: #e74c3c;
+        }
+        .inline-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .inline-buttons {
+                flex-direction: column;
+            }
+        }
+        .optional-section {
+            background: #fef9e3;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .balance-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-lg-7">
+                <!-- FORM CARD -->
+                <div class="form-card">
+                    <div class="form-header">
+                        <h2><i class="fas fa-chalkboard-teacher me-2"></i> Lesson Plan Studio</h2>
+                    </div>
+                    <div class="form-section">
+                        <div class="balance-warning" id="balanceAlert">
+                            <i class="fas fa-wallet me-2"></i> Salio lako: <span id="balanceDisplay">--</span> TZS
+                        </div>
+                        <div class="section-title">🎓 Student Details</div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label required-star">Form</label>
+                                <select class="form-select" id="formSelect">
+                                    <option value="">Chagua kidato</option>
+                                    <option>Form I</option>
+                                    <option>Form II</option>
+                                    <option>Form III</option>
+                                    <option>Form IV</option>
+                                    <option>Form V</option>
+                                    <option>Form VI</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label required-star">Subject</label>
+                                <select class="form-select" id="subjectSelect">
+                                    <option value="">Chagua somo</option>
+                                    <option>Biology</option>
+                                    <option>Physics</option>
+                                    <option>Chemistry</option>
+                                    <option>Mathematics</option>
+                                    <option>English</option>
+                                    <option>Kiswahili</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label required-star">Main Topic</label>
+                                <select class="form-select" id="topicSelect">
+                                    <option value="">Chagua mada kuu</option>
+                                    <option value="introduction">Inroduction</option>
+                                    <option value="cell">Cell</option>
+                                    <option value="classification">Classification</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Registered Girls</label>
+                                <input type="number" class="form-control" id="regGirls" placeholder="0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Registered Boys</label>
+                                <input type="number" class="form-control" id="regBoys" placeholder="0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Present Girls</label>
+                                <input type="number" class="form-control" id="preGirls" placeholder="0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Present Boys</label>
+                                <input type="number" class="form-control" id="preBoys" placeholder="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Stream(s)</label>
+                                <select class="form-select" id="streamSelect" multiple>
+                                    <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option>
+                                </select>
+                                <small class="text-muted">Bonyeza Ctrl kuchagua zaidi ya moja</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-title">🏫 School Details</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label required-star">School Name</label>
+                                <input type="text" class="form-control" id="schoolName" placeholder="Jina la shule">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Teacher Name</label>
+                                <input type="text" class="form-control" id="teacherName" placeholder="Jina la mwalimu">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Specific Activity</label>
+                                <select class="form-select" id="specificActivity">
+                                    <option value="">Chagua shughuli maalum</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Reference</label>
+                                <input type="text" class="form-control" id="reference" placeholder="Kitabu/ref">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-title">📚 Activity Details</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Main Competence</label>
+                                <input type="text" class="form-control" id="mainCompetence">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Specific Competence</label>
+                                <input type="text" class="form-control" id="specificCompetence">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label required-star">Duration (minutes)</label>
+                                <input type="number" class="form-control" id="duration" placeholder="e.g., 40">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label required-star">Teaching Methods</label>
+                                <input type="text" class="form-control" id="methods" placeholder="e.g., Question & Answer, Demonstration">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Main Activity</label>
+                                <textarea class="form-control" rows="2" id="mainActivity" placeholder="Main activity description"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Materials/Resources</label>
+                                <input type="text" class="form-control" id="materials" placeholder="Chalkboard, charts, lab equipment...">
+                            </div>
+                        </div>
+                    </div>
+
+<div class="form-section">
+    <div class="section-title">📝 Lesson Remark</div>
+    <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="optionalToggle">
+        <label class="form-check-label">
+            ❮❮❮ Ruhusu [ ✔ ] remark na mahudhurio ya wanafunzi kutojazwa.
+        </label>
+    </div>
+    <textarea class="form-control" rows="3" id="remark" placeholder="Suggested remarks, reflections, challenges..."></textarea>
+    
+    <!-- Correction container - haionekani mwanzoni -->
+    <div id="correctionContainer" style="display: none;" class="mt-3">
+        <label class="form-label">Correction (if needed)</label>
+        <select class="form-select" id="correctionSelect">
+            <option value="">Chagua rekebisho</option>
+            <option>Teaching activities lack 5Es</option>
+            <option>Improper stage timing</option>
+            <option>Specific activity not match SMART</option>
+            <option>Improper style of assessment criteria</option>
+        </select>
+    </div>
+</div>
+</div>
+                <div class="inline-buttons">
+                    <button class="btn btn-ai" id="generateBtn"><i class="fas fa-magic me-2"></i> Generate Lesson Plan</button>
+                    <button class="btn btn-save" id="savePdfBtn" disabled><i class="fas fa-save me-2"></i> Save as PDF</button>
+                </div>
+            </div>            
+
+            <div class="col-lg-5">
+                <!-- PREVIEW CARD -->
+                <div class="preview-card">
+                    <h4 class="mb-3"><i class="fas fa-eye me-2"></i> Preview</h4>
+                    <div id="previewContent">
+                        <p class="text-muted">Jaza fomu na ubonyeze "Generate Lesson Plan" kuona muundo wa somo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// Helper to update balance display
+async function updateBalance() {
+    const res = await fetch('/api/check-balance');
+    const data = await res.json();
+    document.getElementById('balanceDisplay').innerText = data.balance;
+}
+updateBalance();
+
+// Load topics when subject changes
+const subjectSelect = document.getElementById('subjectSelect');
+const topicSelect = document.getElementById('topicSelect');
+subjectSelect.addEventListener('change', async function() {
+    const subject = this.value;
+    if (!subject) {
+        topicSelect.innerHTML = '<option value="">Chagua mada kuu</option>';
+        return;
+    }
+    const res = await fetch('/api/topics', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject})
+    });
+    const topics = await res.json();
+    topicSelect.innerHTML = '<option value="">Chagua mada kuu</option>' +
+        topics.map(t => `<option value="${t}">${t}</option>`).join('');
+});
+
+// Load specific activities when topic changes
+topicSelect.addEventListener('change', async function() {
+    const topic = this.value;
+    const subject = subjectSelect.value;
+    if (!topic || !subject) return;
+    const res = await fetch('/api/specific-activities', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject, topic})
+    });
+    const activities = await res.json();
+    const select = document.getElementById('specificActivity');
+    select.innerHTML = '<option value="">Chagua shughuli maalum</option>' +
+        activities.map(a => `<option value="${a}">${a}</option>`).join('');
+});
+
+// Collect form data
+function getFormData() {
+    return {
+        class_level: document.getElementById('formSelect').value,
+        subject: subjectSelect.value,
+        topic: topicSelect.value,
+        duration: document.getElementById('duration').value,
+        methods: document.getElementById('methods').value,
+        specific_activity: document.getElementById('specificActivity').value,
+    };
+}
+
+const generateBtn = document.getElementById('generateBtn');
+const previewDiv = document.getElementById('previewContent');
+const savePdfBtn = document.getElementById('savePdfBtn');
+const correctionContainer = document.getElementById('correctionContainer');
+
+// Render preview and show correction container
+function renderPreview(lessonData) {
+    const dev = lessonData.lesson_development;
+    let html = `<div class="mb-3"><strong>Specific Activity:</strong> ${lessonData.specific_activity || ''}</div>`;
+    dev.forEach(stage => {
+        html += `
+            <div class="stage-item">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong>${stage.stage}</strong>
+                    <span class="badge-time">${stage.time_minutes} min</span>
+                </div>
+                <div class="mb-1"><em>Teaching:</em> ${stage.teaching_activity}</div>
+                <div class="mb-1"><em>Learning:</em> ${stage.learning_activity}</div>
+                <div><em>Assessment:</em> ${stage.assessment}</div>
+            </div>
+        `;
+    });
+    previewDiv.innerHTML = html;
+    // Onyesha correction container baada ya preview
+    if (correctionContainer) correctionContainer.style.display = 'block';
+}
+
+// Generate lesson plan
+generateBtn.addEventListener('click', async () => {
+    // Hide correction container while generating new plan
+    if (correctionContainer) correctionContainer.style.display = 'none';
+    
+    const formData = getFormData();
+    if (!formData.class_level || !formData.subject || !formData.topic || !formData.duration || !formData.methods) {
+        alert("Tafadhali jaza sehemu zote zenye nyota (*)");
+        return;
+    }
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Generating...';
+    try {
+        const res = await fetch('/api/generate-lesson', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        renderPreview(data);
+        savePdfBtn.disabled = false;
+    } catch (err) {
+        alert("Kuna tatizo: " + err.message);
+    } finally {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fas fa-magic me-2"></i> Generate Lesson Plan';
+    }
+});
+
+// Save as PDF (with balance check)
+savePdfBtn.addEventListener('click', async () => {
+    const balRes = await fetch('/api/check-balance');
+    const balData = await balRes.json();
+    if (balData.balance < 100) {
+        alert(`Salio lako ni TZS ${balData.balance}. Unahitaji TZS 100 kuhifadhi PDF.`);
+        return;
+    }
+    if (!confirm("Je, lesson plan imekupendeza na upo tayari kuendelea? Utakatwa TZS 100.")) return;
+    const deductRes = await fetch('/api/deduct-balance', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({amount: 100})});
+    const deductData = await deductRes.json();
+    if (!deductData.success) {
+        alert(deductData.message);
+        return;
+    }
+    updateBalance();
+
+    // Collect all form data (including lesson preview and additional fields)
+    // We need to get the latest lesson data again, but we can also use the last generated data stored globally.
+    // For simplicity, we'll call the generation endpoint again (or store last result). We'll store last result.
+    // Let's add a variable to store last generated lesson data.
+    const lastLesson = await (async () => {
+        const res = await fetch('/api/generate-lesson', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(getFormData())
+        });
+        return await res.json();
+    })();
+    
+    const fullData = {
+        ...getFormData(),
+        lesson: lastLesson,
+        school: document.getElementById('schoolName').value,
+        teacher: document.getElementById('teacherName').value,
+        regGirls: document.getElementById('regGirls').value,
+        regBoys: document.getElementById('regBoys').value,
+        preGirls: document.getElementById('preGirls').value,
+        preBoys: document.getElementById('preBoys').value,
+        streams: Array.from(document.getElementById('streamSelect').selectedOptions).map(opt => opt.value),
+        mainCompetence: document.getElementById('mainCompetence').value,
+        specificCompetence: document.getElementById('specificCompetence').value,
+        mainActivity: document.getElementById('mainActivity').value,
+        materials: document.getElementById('materials').value,
+        remark: document.getElementById('remark').value,
+        correction: document.getElementById('correctionSelect').value
+    };
+    const saveRes = await fetch('/api/save-pdf', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(fullData)
+    });
+    const saveData = await saveRes.json();
+    if (saveData.status === 'success') {
+        alert("PDF imeundwa kikamilifu! (Katika toleo halisi, itapakuliwa.)");
+    } else {
+        alert("Hitilafu katika kuunda PDF.");
+    }
+});
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

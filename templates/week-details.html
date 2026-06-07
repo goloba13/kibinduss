@@ -1,0 +1,782 @@
+{% extends "base2.html" %}
+
+{% block title %}Teacher on Duty | KIBINDU{% endblock %}
+
+{% block content %}
+<style>
+    /* ========== STYLES ========== */
+    .container { max-width: 1200px; margin: auto; padding: 0 1rem; }
+    .section-card {
+        background: rgb(136, 158, 138);
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.699);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+    .section-header {
+        background: #386538;
+        padding: 1rem 1.5rem;
+        border-bottom: 2px solid #2d6e33;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    .section-body { padding: 1.5rem; }
+    .question {
+        margin-bottom: 1.2rem;
+        border-left: 3px solid #046e09;
+        padding-left: 1rem;
+    }
+    .question-label { font-weight: 600; margin-bottom: 0.5rem; display: block; }
+    .checkbox-group { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+    .checkbox-group label { font-weight: normal; margin-right: 0.5rem; cursor: pointer; }
+    .conditional-input { margin-top: 0.5rem; margin-left: 1.5rem; display: none; }
+    .conditional-input input, .conditional-input textarea { width: 100%; max-width: 500px; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 8px; }
+    .good { color: #28a745; }
+    .fair { color: #ffc107; }
+    .bad { color: #dc3545; }
+    .btn-save, .btn-report {
+        background: #1e4a3d;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 40px;
+        font-weight: 600;
+        width: 100%;
+        transition: background 0.2s;
+    }
+    .btn-save:hover, .btn-report:hover { background: #123d2f; }
+    .btn-report { background: #28a745; }
+    .hidden-section { display: none; }
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .action-buttons .btn-report {
+        flex: 1;
+        margin-top: 0;
+    }
+    .table-responsive { overflow-x: auto; margin-bottom: 1.5rem; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .table { background-color: white; border-radius: 12px; overflow: hidden; width: 100%; }
+    .table th { background-color: #f8f9fa; font-weight: 600; border-bottom: 2px solid #e9ecef; padding: 12px 10px; }
+    .table td { padding: 10px; vertical-align: middle; border-bottom: 1px solid #e9ecef; }
+    .form-card { margin-bottom: 1.5rem; }
+    .add-stream, .remove-stream { margin: 0 5px; }
+    #prevFormBtn, #nextFormBtn { margin: 10px; padding: 6px 16px; display: inline-block; }
+    @media (max-width: 768px) {
+        .section-body { padding: 1rem; }
+        .checkbox-group { gap: 0.8rem; }
+        .table th, .table td { padding: 8px 6px; font-size: 0.85rem; }
+    }
+</style>
+
+<div class="container">
+    <h2 class="mb-4"><i class="fas fa-chalkboard-teacher me-2"></i> Teacher on Duty</h2>
+
+    <!-- ========== MAIN FORM (T.O.D Details + Questions) ========== -->
+    <div id="todForm">
+        <!-- Teacher on Duty Details -->
+        <div class="section-card">
+            <div class="section-header"><i class="fas fa-user-check"></i> Teacher on Duty Details</div>
+            <div class="section-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Name of T.O.D</label>
+                        <input type="text" class="form-control" id="todName" placeholder="e.g., Teacher Juma">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-control" id="datePicker">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Day of the week</label>
+                        <input type="text" class="form-control" id="dayOfWeek" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. Cooking Section -->
+        <div class="section-card">
+            <div class="section-header"><i class="fas fa-utensils"></i> 🟢 1. Cooking</div>
+            <div class="section-body">
+                <div class="question">
+                    <div class="question-label">Was food cooked today?</div>
+                    <div class="checkbox-group">
+                        <label><input type="radio" name="food_cooked" value="yes"> Yes</label>
+                        <label><input type="radio" name="food_cooked" value="no"> No</label>
+                        <label><input type="radio" name="food_cooked" value="not_sure"> Not sure</label>
+                    </div>
+                    <div class="conditional-input" id="cookingFollowup">
+                        <div class="question">
+                            <div class="question-label">How was the food quality?</div>
+                            <div class="checkbox-group">
+                                <label><input type="radio" name="food_condition" value="good" class="good"> Good</label>
+                                <label><input type="radio" name="food_condition" value="fair" class="fair"> Fair</label>
+                                <label><input type="radio" name="food_condition" value="bad" class="bad"> Bad</label>
+                            </div>
+                            <div class="conditional-input" id="foodBadReason">
+                                <div class="question-label">What action was taken to fix it?</div>
+                                <input type="text" class="form-control" placeholder="Explain...">
+                            </div>
+                        </div>
+                        <div class="question">
+                            <div class="question-label">Were all cooking ingredients available?</div>
+                            <div class="checkbox-group">
+                                <label><input type="radio" name="ingredients_available" value="yes"> Yes</label>
+                                <label><input type="radio" name="ingredients_available" value="no"> No</label>
+                            </div>
+                            <div class="conditional-input" id="missingIngredients">
+                                <div class="question-label">Which ingredients were missing?</div>
+                                <input type="text" class="form-control" placeholder="List...">
+                            </div>
+                        </div>
+                        <div class="question">
+                            <div class="question-label">Was cooking completed on time?</div>
+                            <div class="checkbox-group">
+                                <label><input type="radio" name="cooking_on_time" value="yes"> Yes</label>
+                                <label><input type="radio" name="cooking_on_time" value="no"> No</label>
+                            </div>
+                            <div class="conditional-input" id="cookingDelay">
+                                <div class="question-label">What caused the delay?</div>
+                                <input type="text" class="form-control" placeholder="Reason...">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="conditional-input" id="noFoodReason">
+                        <div class="question-label">Why was food not cooked?</div>
+                        <input type="text" class="form-control" placeholder="Reason...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Hygiene & Safety -->
+        <div class="section-card">
+            <div class="section-header"><i class="fas fa-hand-sparkles"></i> 🟡 2. Hygiene & Safety</div>
+            <div class="section-body">
+                <div class="question">
+                    <div class="question-label">Was the cooking area clean?</div>
+                    <div class="checkbox-group"><label><input type="radio" name="area_clean" value="yes"> Yes</label><label><input type="radio" name="area_clean" value="no"> No</label></div>
+                </div>
+                <div class="question">
+                    <div class="question-label">Was food properly covered after cooking?</div>
+                    <div class="checkbox-group"><label><input type="radio" name="food_covered" value="yes"> Yes</label><label><input type="radio" name="food_covered" value="no"> No</label></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Distribution & Management -->
+        <div class="section-card">
+            <div class="section-header"><i class="fas fa-hands-helping"></i> 🟠 3. Distribution & Management</div>
+            <div class="section-body">
+                <div class="question">
+                    <div class="question-label">Was food served on time?</div>
+                    <div class="checkbox-group"><label><input type="radio" name="served_on_time" value="yes"> Yes</label><label><input type="radio" name="served_on_time" value="no"> No</label></div>
+                </div>
+                <div class="question">
+                    <div class="question-label">Was the food enough for all students?</div>
+                    <div class="checkbox-group"><label><input type="radio" name="food_enough" value="yes"> Yes</label><label><input type="radio" name="food_enough" value="no"> No</label></div>
+                    <div class="conditional-input" id="notEnoughAction">
+                        <div class="question-label">What action was taken?</div>
+                        <input type="text" class="form-control" placeholder="Explain...">
+                    </div>
+                </div>
+                <div class="question">
+                    <div class="question-label">Did any student miss food?</div>
+                    <div class="checkbox-group"><label><input type="radio" name="student_miss" value="yes"> Yes</label><label><input type="radio" name="student_miss" value="no"> No</label></div>
+                    <div class="conditional-input" id="missFoodReason">
+                        <div class="question-label">Explain why</div>
+                        <input type="text" class="form-control" placeholder="Reason...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Supervision -->
+        <div class="section-card">
+            <div class="section-header"><i class="fas fa-eye"></i> 🔴 4. Supervision</div>
+            <div class="section-body">
+                <div class="question">
+                    <div class="question-label">Was the teacher present during serving?</div>
+                    <div class="checkbox-group"><label><input type="radio" name="teacher_serving" value="yes"> Yes</label><label><input type="radio" name="teacher_serving" value="no"> No</label></div>
+                </div>
+                <div class="question">
+                    <div class="question-label">Did the teacher check food quality?</div>
+                    <div class="checkbox-group"><label><input type="radio" name="teacher_quality" value="yes"> Yes</label><label><input type="radio" name="teacher_quality" value="no"> No</label></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Morning & Events Report -->
+        <div class="section-card">
+            <div class="section-header"><i class="fas fa-sun"></i> 🟣 5. Morning & Events Report</div>
+            <div class="section-body">
+                <div class="question">
+                    <div class="question-label">Morning Activity</div>
+                <div class="mb-2">
+                    <label class="form-label">Morning number (Attendance count):</label>
+                    <input type="text" class="form-control" id="morningNumber" placeholder="Number of students present..." pattern="\d*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+                    <div class="mb-2">
+                        <label class="form-label">Cleanliness</label>
+                        <div class="checkbox-group">
+                            <label><input type="radio" name="cleanliness" value="good" class="good"> Good</label>
+                            <label><input type="radio" name="cleanliness" value="fair" class="fair"> Fair</label>
+                            <label><input type="radio" name="cleanliness" value="poor" class="bad"> Poor</label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Other activities (e.g., assembly, sports)</label>
+                        <textarea class="form-control" rows="2" id="otherActivities" placeholder="Describe any other morning activities..."></textarea>
+                    </div>
+                </div>
+                <div class="question">
+                    <div class="question-label">Events</div>
+                    <input type="text" class="form-control" id="events" placeholder="Special events held today...">
+                </div>
+                <div class="question">
+                    <div class="question-label">Security report</div>
+                    <textarea class="form-control" rows="2" id="securityReport" placeholder="Any security incidents or observations..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Evening Activities -->
+        <div class="section-card">
+            <div class="section-header"><i class="fas fa-moon"></i> Evening Activities</div>
+            <div class="section-body">
+                <textarea class="form-control" id="eveningActivities" rows="2" placeholder="Describe evening activities..."></textarea>
+            </div>
+        </div>
+
+        <!-- 7. General Comments -->
+        <div class="section-card">
+            <div class="section-header"><i class="fas fa-comment-dots"></i> ⚪ 7. General Comments</div>
+            <div class="section-body">
+                <div class="question">
+                    <div class="question-label">Challenges faced today</div>
+                    <textarea class="form-control" rows="2" id="challenges"></textarea>
+                </div>
+                <div class="question">
+                    <div class="question-label">Suggestions for improvement</div>
+                    <textarea class="form-control" rows="2" id="suggestions"></textarea>
+                </div>
+                <div class="question">
+                    <div class="question-label">T.O.D Comments</div>
+                    <textarea class="form-control" rows="3" id="todComments" placeholder="Any additional comments..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-save" id="saveBtn"><i class="fas fa-save me-2"></i> Next</button>
+    </div>
+
+    <!-- ========== ATTENDANCE SECTION (Streams + Present/Permission/Sick) ========== -->
+    <div id="attendanceSection" class="hidden-section">
+        <h4 class="mb-3">Mahudhurio kwa Kidato na Mkondo</h4>
+        <div id="formsContainer"></div>
+        <div class="mt-3">
+            <button id="prevFormBtn" class="btn-report" style="background: #6c757d; display: none;">K- (Previous Form)</button>
+            <button id="nextFormBtn" class="btn-report" style="background: #17a2b8;">K+ (Next Form)</button>
+        </div>
+    </div>
+
+    <div id="commentsAfterTables" class="hidden-section section-card" style="margin-top: 1.5rem;">
+        <div class="section-header"><i class="fas fa-comment-dots"></i> T.O.D Comments</div>
+        <div class="section-body"><div id="displayComments" class="p-2 bg-light rounded" style="white-space: pre-wrap;"></div></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div id="actionButtons" class="hidden-section action-buttons">
+        <button id="backBtn" class="btn-report" style="background: #6c757d;"><i class="fas fa-arrow-left me-2"></i> Back to Form</button>
+        <button id="createReportBtn" class="btn-report"><i class="fas fa-file-alt me-2"></i> Create Report</button>
+        <button id="saveReportBtn" class="btn-report" style="background: #28a745;"><i class="fas fa-save me-2"></i> Save</button>
+
+    </div>
+</div>
+
+<script>
+    // ---------- UTILITY ----------
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+    }
+
+    // ---------- DATE HANDLING ----------
+    const dateInput = document.getElementById('datePicker');
+    const dayOfWeekInput = document.getElementById('dayOfWeek');
+    function updateDay() {
+        if (!dateInput.value) { dayOfWeekInput.value = ''; return; }
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        dayOfWeekInput.value = days[new Date(dateInput.value).getDay()];
+    }
+    dateInput.addEventListener('change', updateDay);
+    dateInput.value = new Date().toISOString().split('T')[0];
+    updateDay();
+
+    // ---------- CONDITIONAL LOGIC FOR FOOD SECTION ----------
+    const foodCookedRadios = document.querySelectorAll('input[name="food_cooked"]');
+    const cookingFollowup = document.getElementById('cookingFollowup');
+    const noFoodReason = document.getElementById('noFoodReason');
+    const foodConditionRadios = document.querySelectorAll('input[name="food_condition"]');
+    const foodBadReason = document.getElementById('foodBadReason');
+    const ingredientsRadios = document.querySelectorAll('input[name="ingredients_available"]');
+    const missingIngredients = document.getElementById('missingIngredients');
+    const cookingOnTimeRadios = document.querySelectorAll('input[name="cooking_on_time"]');
+    const cookingDelay = document.getElementById('cookingDelay');
+    const foodEnoughRadios = document.querySelectorAll('input[name="food_enough"]');
+    const notEnoughAction = document.getElementById('notEnoughAction');
+    const studentMissRadios = document.querySelectorAll('input[name="student_miss"]');
+    const missFoodReason = document.getElementById('missFoodReason');
+
+    function toggleCookingSection() {
+        const selected = document.querySelector('input[name="food_cooked"]:checked');
+        if (selected && selected.value === 'yes') {
+            cookingFollowup.style.display = 'block';
+            noFoodReason.style.display = 'none';
+            noFoodReason.querySelector('input').value = '';
+            cookingFollowup.querySelectorAll('input').forEach(i => { if (i.type === 'radio') i.checked = false; });
+            foodBadReason.style.display = 'none';
+            missingIngredients.style.display = 'none';
+            cookingDelay.style.display = 'none';
+        } else if (selected && selected.value === 'no') {
+            cookingFollowup.style.display = 'none';
+            noFoodReason.style.display = 'block';
+        } else {
+            cookingFollowup.style.display = 'none';
+            noFoodReason.style.display = 'none';
+        }
+    }
+    function toggleFoodBadReason() {
+        const selected = document.querySelector('input[name="food_condition"]:checked');
+        if (selected && selected.value === 'bad') foodBadReason.style.display = 'block';
+        else { foodBadReason.style.display = 'none'; foodBadReason.querySelector('input').value = ''; }
+    }
+    function toggleMissingIngredients() {
+        const selected = document.querySelector('input[name="ingredients_available"]:checked');
+        if (selected && selected.value === 'no') missingIngredients.style.display = 'block';
+        else { missingIngredients.style.display = 'none'; missingIngredients.querySelector('input').value = ''; }
+    }
+    function toggleCookingDelay() {
+        const selected = document.querySelector('input[name="cooking_on_time"]:checked');
+        if (selected && selected.value === 'no') cookingDelay.style.display = 'block';
+        else { cookingDelay.style.display = 'none'; cookingDelay.querySelector('input').value = ''; }
+    }
+    function toggleNotEnoughAction() {
+        const selected = document.querySelector('input[name="food_enough"]:checked');
+        if (selected && selected.value === 'no') notEnoughAction.style.display = 'block';
+        else { notEnoughAction.style.display = 'none'; notEnoughAction.querySelector('input').value = ''; }
+    }
+    function toggleMissFoodReason() {
+        const selected = document.querySelector('input[name="student_miss"]:checked');
+        if (selected && selected.value === 'yes') missFoodReason.style.display = 'block';
+        else { missFoodReason.style.display = 'none'; missFoodReason.querySelector('input').value = ''; }
+    }
+
+    foodCookedRadios.forEach(r => r.addEventListener('change', toggleCookingSection));
+    foodConditionRadios.forEach(r => r.addEventListener('change', toggleFoodBadReason));
+    ingredientsRadios.forEach(r => r.addEventListener('change', toggleMissingIngredients));
+    cookingOnTimeRadios.forEach(r => r.addEventListener('change', toggleCookingDelay));
+    foodEnoughRadios.forEach(r => r.addEventListener('change', toggleNotEnoughAction));
+    studentMissRadios.forEach(r => r.addEventListener('change', toggleMissFoodReason));
+
+    // Initial hide
+    cookingFollowup.style.display = 'none';
+    noFoodReason.style.display = 'none';
+    foodBadReason.style.display = 'none';
+    missingIngredients.style.display = 'none';
+    cookingDelay.style.display = 'none';
+    notEnoughAction.style.display = 'none';
+    missFoodReason.style.display = 'none';
+
+// ---------- ATTENDANCE DATA STRUCTURE (with registered_boys, registered_girls) ----------
+let attendanceData = {
+    form1: { streams: [] },
+    form2: { streams: [] },
+    form3: { streams: [] },
+    form4: { streams: [] },
+    form5: { streams: [] },
+    form6: { streams: [] }
+};
+
+const formsOrder = ['form1', 'form2', 'form3', 'form4'];
+const formDisplayNames = { form1: 'Form 1', form2: 'Form 2', form3: 'Form 3', form4: 'Form 4'};
+let currentFormIndex = 0;
+
+function getNextStreamLetter(existingStreams) {
+    const used = existingStreams.map(s => s.streamName);
+    for (let i = 0; i < 26; i++) {
+        const letter = String.fromCharCode(65 + i);
+        if (!used.includes(letter)) return letter;
+    }
+    return '?';
+}
+
+function renderCurrentForm() {
+    const currentKey = formsOrder[currentFormIndex];
+    const container = document.getElementById('formsContainer');
+    if (!container) return;
+    const formData = attendanceData[currentKey];
+    
+    // Ensure at least one stream exists
+    if (formData.streams.length === 0) {
+        formData.streams.push({
+            streamName: 'A',
+            present_boys: 0, present_girls: 0,
+            permission_boys: 0, permission_girls: 0,
+            sick_boys: 0, sick_girls: 0,
+            registered_boys: 0, registered_girls: 0
+        });
+    }
+    
+    // Build HTML table
+    let html = `<div class="form-card">
+        <div class="section-header">${formDisplayNames[currentKey]}</div>
+        <div class="section-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="streamTable_${currentKey}">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Mkondo</th>
+                            <th colspan="2">Present</th>
+                            <th colspan="2">Permission</th>
+                            <th colspan="2">Sick</th>
+                            <th colspan="2">Registered</th>
+                            <th rowspan="2">Absent Boys</th>
+                            <th rowspan="2">Absent Girls</th>
+                            <th rowspan="2">Action</th>
+                        </tr>
+                        <tr>
+                            <th>Boys</th><th>Girls</th>
+                            <th>Boys</th><th>Girls</th>
+                            <th>Boys</th><th>Girls</th>
+                            <th>Boys</th><th>Girls</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+    
+    formData.streams.forEach((stream, idx) => {
+        const totalPresentBoys = (stream.present_boys || 0) + (stream.permission_boys || 0) + (stream.sick_boys || 0);
+        const totalPresentGirls = (stream.present_girls || 0) + (stream.permission_girls || 0) + (stream.sick_girls || 0);
+        const absentBoys = (stream.registered_boys || 0) - totalPresentBoys;
+        const absentGirls = (stream.registered_girls || 0) - totalPresentGirls;
+        
+        html += `<tr data-stream-idx="${idx}">
+            <td><input type="text" class="form-control stream-name" value="${escapeHtml(stream.streamName)}" style="width:70px;"></td>
+            <td><input type="number" class="form-control present-boys" value="${stream.present_boys}" min="0" style="width:70px;"></td>
+            <td><input type="number" class="form-control present-girls" value="${stream.present_girls}" min="0" style="width:70px;"></td>
+            <td><input type="number" class="form-control permission-boys" value="${stream.permission_boys}" min="0" style="width:70px;"></td>
+            <td><input type="number" class="form-control permission-girls" value="${stream.permission_girls}" min="0" style="width:70px;"></td>
+            <td><input type="number" class="form-control sick-boys" value="${stream.sick_boys}" min="0" style="width:70px;"></td>
+            <td><input type="number" class="form-control sick-girls" value="${stream.sick_girls}" min="0" style="width:70px;"></td>
+            <td><input type="number" class="form-control registered-boys" value="${stream.registered_boys}" min="0" style="width:80px;"></td>
+            <td><input type="number" class="form-control registered-girls" value="${stream.registered_girls}" min="0" style="width:80px;"></td>
+            <td class="absent-boys-col">${absentBoys >= 0 ? absentBoys : 0}</td>
+            <td class="absent-girls-col">${absentGirls >= 0 ? absentGirls : 0}</td>
+            <td><button type="button" class="btn btn-sm btn-danger remove-stream">✖</button></td>
+        </tr>`;
+    });
+    
+    html += `</tbody>
+            </table>
+            </div>
+            <button type="button" class="btn btn-sm btn-success add-stream">M+ (Add Stream)</button>
+        </div>
+    </div>`;
+    container.innerHTML = html;
+    
+    // Attach event listeners for the current form
+    const tbody = container.querySelector(`#streamTable_${currentKey} tbody`);
+    if (!tbody) return;
+    
+    function updateRowAbsents(row) {
+        const presentB = parseInt(row.querySelector('.present-boys').value) || 0;
+        const presentG = parseInt(row.querySelector('.present-girls').value) || 0;
+        const permB = parseInt(row.querySelector('.permission-boys').value) || 0;
+        const permG = parseInt(row.querySelector('.permission-girls').value) || 0;
+        const sickB = parseInt(row.querySelector('.sick-boys').value) || 0;
+        const sickG = parseInt(row.querySelector('.sick-girls').value) || 0;
+        const regB = parseInt(row.querySelector('.registered-boys').value) || 0;
+        const regG = parseInt(row.querySelector('.registered-girls').value) || 0;
+        const totalPresentB = presentB + permB;
+        const totalPresentG = presentG + permG;
+        const absentB = regB - totalPresentB;
+        const absentG = regG - totalPresentG;
+        row.querySelector('.absent-boys-col').innerText = absentB >= 0 ? absentB : 0;
+        row.querySelector('.absent-girls-col').innerText = absentG >= 0 ? absentG : 0;
+        const idx = parseInt(row.dataset.streamIdx);
+        attendanceData[currentKey].streams[idx].present_boys = presentB;
+        attendanceData[currentKey].streams[idx].present_girls = presentG;
+        attendanceData[currentKey].streams[idx].permission_boys = permB;
+        attendanceData[currentKey].streams[idx].permission_girls = permG;
+        attendanceData[currentKey].streams[idx].sick_boys = sickB;
+        attendanceData[currentKey].streams[idx].sick_girls = sickG;
+        attendanceData[currentKey].streams[idx].registered_boys = regB;
+        attendanceData[currentKey].streams[idx].registered_girls = regG;
+    }
+    
+    // All numeric inputs
+    const numericInputs = tbody.querySelectorAll('.present-boys, .present-girls, .permission-boys, .permission-girls, .sick-boys, .sick-girls, .registered-boys, .registered-girls');
+    numericInputs.forEach(inp => {
+        inp.addEventListener('input', function() {
+            const row = this.closest('tr');
+            if (row) updateRowAbsents(row);
+        });
+    });
+    
+    // Stream name change
+    tbody.querySelectorAll('.stream-name').forEach(inp => {
+        inp.addEventListener('change', function() {
+            const row = this.closest('tr');
+            const idx = parseInt(row.dataset.streamIdx);
+            attendanceData[currentKey].streams[idx].streamName = this.value;
+        });
+    });
+    
+    // Remove stream button
+    tbody.querySelectorAll('.remove-stream').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const idx = parseInt(row.dataset.streamIdx);
+            attendanceData[currentKey].streams.splice(idx, 1);
+            renderCurrentForm(); // re-render
+        });
+    });
+    
+    // Add stream button
+    const addBtn = container.querySelector('.add-stream');
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            const newLetter = getNextStreamLetter(attendanceData[currentKey].streams);
+            attendanceData[currentKey].streams.push({
+                streamName: newLetter,
+                present_boys: 0, present_girls: 0,
+                permission_boys: 0, permission_girls: 0,
+                sick_boys: 0, sick_girls: 0,
+                registered_boys: 0, registered_girls: 0
+            });
+            renderCurrentForm();
+        });
+    }
+}
+
+function nextForm() {
+    if (currentFormIndex + 1 < formsOrder.length) {
+        currentFormIndex++;
+        renderCurrentForm();
+        const prevBtn = document.getElementById('prevFormBtn');
+        if (prevBtn) prevBtn.style.display = currentFormIndex > 0 ? 'inline-block' : 'none';
+    } else {
+        alert('Umefikia kidato cha mwisho (Form 6).');
+    }
+}
+
+function prevForm() {
+    if (currentFormIndex - 1 >= 0) {
+        currentFormIndex--;
+        renderCurrentForm();
+        const prevBtn = document.getElementById('prevFormBtn');
+        if (prevBtn) prevBtn.style.display = currentFormIndex > 0 ? 'inline-block' : 'none';
+    }
+}
+
+// ---------- OVERRIDE SAVE BUTTON ----------
+const saveBtn = document.getElementById('saveBtn');
+const todFormDiv = document.getElementById('todForm');
+const attendanceSection = document.getElementById('attendanceSection');
+const commentsAfterTables = document.getElementById('commentsAfterTables');
+const actionButtons = document.getElementById('actionButtons');
+const backBtn = document.getElementById('backBtn');
+const createReportBtn = document.getElementById('createReportBtn');
+const displayComments = document.getElementById('displayComments');
+
+function onSave() {
+    const comment = document.getElementById('todComments')?.value || '';
+    if (displayComments) displayComments.innerText = comment || 'No comments.';
+    todFormDiv.classList.add('hidden-section');
+    attendanceSection.classList.remove('hidden-section');
+    commentsAfterTables.classList.remove('hidden-section');
+    actionButtons.classList.remove('hidden-section');
+    // Initialize first form
+    currentFormIndex = 0;
+    renderCurrentForm();
+    const prevBtn = document.getElementById('prevFormBtn');
+    if (prevBtn) prevBtn.style.display = 'none';
+}
+
+if (saveBtn) {
+    // Replace old click handler to avoid duplicates
+    const newSaveBtn = saveBtn.cloneNode(true);
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    newSaveBtn.addEventListener('click', onSave);
+}
+
+// Navigation buttons
+const nextBtn = document.getElementById('nextFormBtn');
+const prevBtn = document.getElementById('prevFormBtn');
+if (nextBtn) nextBtn.addEventListener('click', nextForm);
+if (prevBtn) prevBtn.addEventListener('click', prevForm);
+
+// Back button
+if (backBtn) {
+    backBtn.addEventListener('click', () => {
+        todFormDiv.classList.remove('hidden-section');
+        attendanceSection.classList.add('hidden-section');
+        commentsAfterTables.classList.add('hidden-section');
+        actionButtons.classList.add('hidden-section');
+    });
+}
+
+// ---------- CREATE REPORT (send to backend) ----------
+if (createReportBtn) {
+    createReportBtn.addEventListener('click', async () => {
+        // Collect all form data (same as before, but ensure attendanceData is included)
+        const tod_name = document.getElementById('todName')?.value || '';
+        const date = document.getElementById('datePicker')?.value || '';
+        const day_of_week = document.getElementById('dayOfWeek')?.value || '';
+        const food_cooked = document.querySelector('input[name="food_cooked"]:checked')?.value || '';
+        const food_condition = document.querySelector('input[name="food_condition"]:checked')?.value || '';
+        const food_bad_action = document.querySelector('#foodBadReason input')?.value || '';
+        const ingredients_available = document.querySelector('input[name="ingredients_available"]:checked')?.value || '';
+        const missing_ingredients = document.querySelector('#missingIngredients input')?.value || '';
+        const cooking_on_time = document.querySelector('input[name="cooking_on_time"]:checked')?.value || '';
+        const cooking_delay_reason = document.querySelector('#cookingDelay input')?.value || '';
+        const no_food_reason = document.querySelector('#noFoodReason input')?.value || '';
+        const area_clean = document.querySelector('input[name="area_clean"]:checked')?.value || '';
+        const food_covered = document.querySelector('input[name="food_covered"]:checked')?.value || '';
+        const served_on_time = document.querySelector('input[name="served_on_time"]:checked')?.value || '';
+        const food_enough = document.querySelector('input[name="food_enough"]:checked')?.value || '';
+        const not_enough_action = document.querySelector('#notEnoughAction input')?.value || '';
+        const student_miss = document.querySelector('input[name="student_miss"]:checked')?.value || '';
+        const miss_food_reason = document.querySelector('#missFoodReason input')?.value || '';
+        const teacher_serving = document.querySelector('input[name="teacher_serving"]:checked')?.value || '';
+        const teacher_quality = document.querySelector('input[name="teacher_quality"]:checked')?.value || '';
+        const morning_number = document.getElementById('morningNumber')?.value || '';
+        const cleanliness = document.querySelector('input[name="cleanliness"]:checked')?.value || '';
+        const other_activities = document.getElementById('otherActivities')?.value || '';
+        const events = document.getElementById('events')?.value || '';
+        const security_report = document.getElementById('securityReport')?.value || '';
+        const challenges = document.getElementById('challenges')?.value || '';
+        const suggestions = document.getElementById('suggestions')?.value || '';
+        const tod_comments = document.getElementById('todComments')?.value || '';
+        const evening_activities = document.getElementById('eveningActivities')?.value || '';
+
+        const payload = {
+            tod_name, date, day_of_week,
+            food_cooked, food_condition, food_bad_action,
+            ingredients_available, missing_ingredients,
+            cooking_on_time, cooking_delay_reason, no_food_reason,
+            area_clean, food_covered, served_on_time, food_enough,
+            not_enough_action, student_miss, miss_food_reason,
+            teacher_serving, teacher_quality,
+            morning_number, cleanliness, other_activities,
+            events, security_report, challenges, suggestions,
+            tod_comments, evening_activities,
+            attendance: attendanceData
+        };
+
+        try {
+            const response = await fetch('/generate_tod_report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `tod_report_${new Date().toISOString().slice(0,19)}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } else {
+                const err = await response.json();
+                alert('Hitilafu: ' + (err.error || 'Jaribu tena'));
+            }
+        } catch (err) {
+            alert('Kosa la mtandao: ' + err.message);
+        }
+    });
+}
+
+// ---------- KITUFE CHA SAVE (Hifadhi kwenye Storage na View) ----------
+const saveReportBtn = document.getElementById('saveReportBtn');
+if (saveReportBtn) {
+    saveReportBtn.addEventListener('click', async () => {
+        // Kukusanya data – unaweza kutumia kazi moja, lakini hapa tunaandika kwa ufupi
+        // (Nakili block ya kukusanya data kutoka kwa createReportBtn)
+        const tod_name = document.getElementById('todName')?.value || '';
+        const date = document.getElementById('datePicker')?.value || '';
+        const day_of_week = document.getElementById('dayOfWeek')?.value || '';
+        const food_cooked = document.querySelector('input[name="food_cooked"]:checked')?.value || '';
+        const food_condition = document.querySelector('input[name="food_condition"]:checked')?.value || '';
+        const food_bad_action = document.querySelector('#foodBadReason input')?.value || '';
+        const ingredients_available = document.querySelector('input[name="ingredients_available"]:checked')?.value || '';
+        const missing_ingredients = document.querySelector('#missingIngredients input')?.value || '';
+        const cooking_on_time = document.querySelector('input[name="cooking_on_time"]:checked')?.value || '';
+        const cooking_delay_reason = document.querySelector('#cookingDelay input')?.value || '';
+        const no_food_reason = document.querySelector('#noFoodReason input')?.value || '';
+        const area_clean = document.querySelector('input[name="area_clean"]:checked')?.value || '';
+        const food_covered = document.querySelector('input[name="food_covered"]:checked')?.value || '';
+        const served_on_time = document.querySelector('input[name="served_on_time"]:checked')?.value || '';
+        const food_enough = document.querySelector('input[name="food_enough"]:checked')?.value || '';
+        const not_enough_action = document.querySelector('#notEnoughAction input')?.value || '';
+        const student_miss = document.querySelector('input[name="student_miss"]:checked')?.value || '';
+        const miss_food_reason = document.querySelector('#missFoodReason input')?.value || '';
+        const teacher_serving = document.querySelector('input[name="teacher_serving"]:checked')?.value || '';
+        const teacher_quality = document.querySelector('input[name="teacher_quality"]:checked')?.value || '';
+        const morning_number = document.getElementById('morningNumber')?.value || '';
+        const cleanliness = document.querySelector('input[name="cleanliness"]:checked')?.value || '';
+        const other_activities = document.getElementById('otherActivities')?.value || '';
+        const events = document.getElementById('events')?.value || '';
+        const security_report = document.getElementById('securityReport')?.value || '';
+        const challenges = document.getElementById('challenges')?.value || '';
+        const suggestions = document.getElementById('suggestions')?.value || '';
+        const tod_comments = document.getElementById('todComments')?.value || '';
+        const evening_activities = document.getElementById('eveningActivities')?.value || '';
+
+        const payload = {
+            tod_name, date, day_of_week,
+            food_cooked, food_condition, food_bad_action,
+            ingredients_available, missing_ingredients,
+            cooking_on_time, cooking_delay_reason, no_food_reason,
+            area_clean, food_covered, served_on_time, food_enough,
+            not_enough_action, student_miss, miss_food_reason,
+            teacher_serving, teacher_quality,
+            morning_number, cleanliness, other_activities,
+            events, security_report, challenges, suggestions,
+            tod_comments, evening_activities,
+            attendance: attendanceData
+        };
+        // Onyesha spinner (kama ipo)
+        if (typeof showSpinner === 'function') showSpinner(true);
+        saveReportBtn.disabled = true;
+
+        try {
+            const response = await fetch('/save-tod-report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (response.ok) {
+                const html = await response.text();
+                document.open();
+                document.write(html);
+                document.close();
+            } else {
+                const err = await response.json();
+                alert('Hitilafu: ' + (err.error || 'Jaribu tena'));
+            }
+        } catch (err) {
+            alert('Kosa la mtandao: ' + err.message);
+        } finally {
+            if (typeof showSpinner === 'function') showSpinner(false);
+            saveReportBtn.disabled = false;
+        }
+    });
+}
+</script>
+{% endblock %}

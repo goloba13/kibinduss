@@ -1,0 +1,310 @@
+{% extends "academic_base.html" %}
+{% block title %}Sajili Masomo{% endblock %}
+
+{% block content %}
+<style>
+    /* ========== STYLE ZA UKURASA WA KUSAJILI MASOMO (manage_subjects.html) ========== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+h2 {
+    color: #1e4a3d;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    border-left: 5px solid #1e4a3d;
+    padding-left: 1rem;
+}
+
+/* Dropdown styling */
+.form-select {
+    border: 1px solid #ced4da;
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    background-color: white;
+    font-size: 1rem;
+    transition: 0.2s;
+}
+.form-select:focus {
+    border-color: #1e4a3d;
+    box-shadow: 0 0 0 3px rgba(30, 74, 61, 0.1);
+    outline: none;
+}
+
+/* Kadi ya jedwali */
+.card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.card-header {
+    background: #f8fafc;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 600;
+    color: #1e4a3d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.card-header .btn {
+    margin-left: 0.5rem;
+}
+
+.card-body {
+    padding: 0;
+    overflow-x: auto;
+}
+
+/* Jedwali la wanafunzi */
+.table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 0.9rem 1.2rem;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.table thead th {
+    background-color: #f1f5f9;
+    color: #1e4a3d;
+    font-weight: 700;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.table tbody tr:hover {
+    background-color: #f9fbfd;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    cursor: pointer;
+    accent-color: #1e4a3d;
+    border-radius: 4px;
+}
+
+/* Vifungo vidogo vya chagua wote / ondoa wote */
+.btn-sm {
+    padding: 0.25rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 30px;
+}
+
+.btn-secondary {
+    background-color: #e2e8f0;
+    border: none;
+    color: #2d3e50;
+    transition: 0.2s;
+}
+.btn-secondary:hover {
+    background-color: #cbd5e1;
+}
+
+/* Kitufe kikuu cha kuhifadhi */
+.btn-primary {
+    background: #1e4a3d;
+    border: none;
+    padding: 0.7rem 1.8rem;
+    border-radius: 40px;
+    font-weight: 600;
+    color: white;
+    transition: 0.2s;
+}
+.btn-primary:hover {
+    background: #0f2c23;
+    transform: translateY(-1px);
+}
+
+/* Footer ya kadi */
+.card-footer {
+    background: #ffffff;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+#status {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Urahisi kwenye simu */
+@media (max-width: 768px) {
+    .table th,
+    .table td {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    .card-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    .card-header .btn-group {
+        display: flex;
+        justify-content: center;
+    }
+    .btn-sm {
+        font-size: 0.7rem;
+    }
+    .card-footer {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+}
+
+/* Checkbox ya "Select All" kwenye header ya jedwali */
+.table thead th:first-child {
+    text-align: center;
+    width: 50px;
+}
+.table td:first-child {
+    text-align: center;
+}
+</style>
+<div class="container mt-4">
+    <h2>Sajili Wanafunzi kwa Somo</h2>
+<form id="subjectForm" method="get" action="{{ url_for('manage_subjects') }}" class="mb-4">
+    <div class="row">
+        <div class="col-md-4">
+            <label>Kidato:</label>
+            <select name="form" class="form-select" onchange="this.form.submit()">
+                {% for f in forms %}
+                <option value="{{ f }}" {% if f == selected_form %}selected{% endif %}>{{ f }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label>Chagua Somo:</label>
+            <select name="subject_id" class="form-select" onchange="this.form.submit()">
+                {% for subj in subjects %}
+                <option value="{{ subj.id }}" {% if subj.id == selected_subject_id %}selected{% endif %}>
+                    {{ subj.subject_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</form>
+
+    <form id="registrationForm">
+        <input type="hidden" id="subject_id" value="{{ selected_subject_id }}">
+        <div class="card">
+            <div class="card-header">
+                <strong>Wanafunzi</strong>
+                <button type="button" id="checkAllBtn" class="btn btn-sm btn-secondary float-end">Chagua Wote</button>
+                <button type="button" id="uncheckAllBtn" class="btn btn-sm btn-secondary float-end me-2">Ondoa Wote</button>
+            </div>
+            <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                <table class="table table-striped">
+                    <thead>
+                        <tr><th><input type="checkbox" id="selectAll"></th><th>Jina</th><th>Kidato</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td><input type="checkbox" class="student-checkbox" value="{{ student.id }}" 
+                                       {% if student.id in registered_students %}checked{% endif %}></td>
+                            <td>{{ student.student_name }}</td>
+                            <td>{{ student.current_class }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">Hifadhi Usajili</button>
+                <span id="status" class="ms-3"></span>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.student-checkbox');
+    const checkAllBtn = document.getElementById('checkAllBtn');
+    const uncheckAllBtn = document.getElementById('uncheckAllBtn');
+
+    // Select/Deselect all checkboxes
+    selectAllCheckbox.addEventListener('change', function() {
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+    checkAllBtn.addEventListener('click', () => {
+        checkboxes.forEach(cb => cb.checked = true);
+        if (selectAllCheckbox) selectAllCheckbox.checked = true;
+    });
+    uncheckAllBtn.addEventListener('click', () => {
+        checkboxes.forEach(cb => cb.checked = false);
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+    });
+
+    // Update "select all" checkbox when individual changes
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            const allChecked = Array.from(checkboxes).every(c => c.checked);
+            selectAllCheckbox.checked = allChecked;
+        });
+    });
+
+    // Submit form via AJAX (with form/kidato included)
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const subject_id = document.getElementById('subject_id').value;
+        const student_ids = Array.from(checkboxes).filter(cb => cb.checked).map(cb => parseInt(cb.value));
+        // Pata kidato kilichochaguliwa kwenye dropdown (kwa sasa)
+        const formSelect = document.querySelector('#subjectForm select[name="form"]');
+        const selectedForm = formSelect ? formSelect.value : null;
+
+        const statusSpan = document.getElementById('status');
+        statusSpan.innerHTML = '<span class="text-info">Inahifadhi...</span>';
+        try {
+            const response = await fetch('/save_subject_registrations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    subject_id: parseInt(subject_id), 
+                    student_ids: student_ids,
+                    form: selectedForm   // ← Ongezeko muhimu
+                })
+            });
+            const text = await response.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (err) {
+                throw new Error(`Server imerudisha: ${text.substring(0, 200)}`);
+            }
+            if (response.ok) {
+                statusSpan.innerHTML = `<span class="text-success">✅ ${data.message}. Walioungwa: ${data.added}, Walioondolewa: ${data.removed}</span>`;
+            } else {
+                statusSpan.innerHTML = `<span class="text-danger">❌ Hitilafu: ${data.error || data.message || 'Jaribu tena'}</span>`;
+            }
+        } catch (err) {
+            console.error(err);
+            statusSpan.innerHTML = `<span class="text-danger">❌ Kosa la mawasiliano: ${err.message}</span>`;
+        }
+        setTimeout(() => statusSpan.innerHTML = '', 5000);
+    });
+</script>
+{% endblock %}

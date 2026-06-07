@@ -1,0 +1,722 @@
+{% extends "base2.html" %}
+
+{% block title %}Marks Entry | KIBINDU{% endblock %}
+
+{% block content %}
+<style>
+    /* flash sms ya login success */
+            /* Styling ya flash message */
+        .flash-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50; /* green */
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+        .flash-message.error {
+            background-color: #f44336; /* red */
+        }
+        .flash-message.warning {
+            background-color: #ff9800; /* orange */
+        }
+        /* Content Header */
+        .content-header {
+            padding: 1.5rem 2rem 0.5rem;
+        }
+
+        .container-fluid {
+            padding: 0 2rem;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.75rem;
+        }
+
+        .col-lg-3, .col-lg-4, .col-lg-8, .col-6, .col-11, .col-1 {
+            padding: 0 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .col-lg-3 { width: 25%; }
+        .col-lg-4 { width: 33.33%; }
+        .col-lg-8 { width: 66.67%; }
+        .col-6 { width: 50%; }
+        .col-11 { width: 91.666%; }
+        .col-1 { width: 8.333%; }
+
+        /* Small boxes */
+        .small-box {
+            border-radius: 8px;
+            color: white;
+            padding: 1.5rem 1rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .small-box .inner h3 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .small-box .icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 4rem;
+            opacity: 0.3;
+        }
+/*  hapo juu nimeongeza kama haitofaa basi nitaondoa  */            
+        .small-box:hover i {
+            transform: scale(1.7); /* kuongeza ikoni zaidi */
+            transition: transform 0.3s ease;
+            color: rgb(76, 4, 130);
+            animation: shake 0.3s ease-in-out;
+        }   
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-3px); }
+            100% { transform: translateX(0); }
+        }
+        .small-box-footer:hover i {          
+           animation: pulse 1s infinite;
+            
+        }           
+        @keyframes pulse {
+            0% { color: currentColor; }
+            50% { color: #046318; } /* Badilisha na rangi unayotaka */
+            100% { color: currentColor; }
+        }
+
+        .small-box-footer {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            display: block;
+            margin-top: 1rem;
+        }
+
+        .bg-info { background: #17a2b8; }
+        .bg-success { background: #28a745; }
+        .bg-danger { background: #dc3545; }
+        .bg-warning { background: #ffc107; color: #212529; }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            padding: 1rem 2.1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            overflow-x: auto;
+           -webkit-overflow-scrolling: touch;
+        }
+
+        /* Table */
+        .table {
+            width: 70%;
+            border-collapse: collapse;
+        }
+/*nyongeza za css kwa kufanya table ziwe vizuri ............*/
+
+
+        .table th, .table td {
+            padding: 0.7rem;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .badge.bg-success {
+            background: #9b04049b;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            color: white;
+        }
+
+        .pull-right {
+            float: right;
+        }
+
+        /* Info box */
+        .info-box {
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-box-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .progress {
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            margin: 0.5rem 0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: white;
+            border-radius: 4px;
+            width: 0%;
+        }
+
+        .text-right { text-align: right; }
+        .text-bold { font-weight: 600; }
+        .text-muted { 
+            opacity: 0.8; 
+            font-size: 10px;        
+        }
+
+        /* Alert */
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-dark {
+            background: #343a40;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+ 
+/* SMS STYLE FOR CURRENT CARD */
+/* SMS Cards */
+#smsCardsContainer {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.sms-card {
+    width: 99%;
+    max-width: 99%;
+    background: #fff;
+    border-left: 5px solid #007bff;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 12px 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.525);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.sms-card.unread {
+    background: #fff9e6;
+    border-left-color: #ffc107;
+}
+.sms-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+.sms-sender {
+    font-weight: 600;
+    color: #007bff;
+}
+.sms-time {
+    font-style: italic;
+}
+.sms-body {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    word-break: break-word;
+    line-height: 1.4;
+}
+.sms-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+.read-count-badge {
+    background: #e9ecef;
+    border-radius: 20px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: background 0.2s;
+}
+.read-count-badge:hover {
+    background: #dee2e6;
+}
+/*===================CSS ZA MODAL==========================*/
+/* Fanya modal iwe na urefu unaolingana na maudhui, sio mrefu sana */
+.modal-dialog {
+    max-width: 280px;
+    margin: 1.75rem auto;
+    max-height: 220px;
+    
+}
+.modal-body {
+    max-height: 300px;
+    overflow-y: auto;
+}
+/* Ikiwa unatumia modal-dialog-scrollable, override */
+.modal-dialog-scrollable .modal-body {
+    max-height: 250px;
+    overflow-y: auto;
+}
+/* Punguza padding ya modal-header na modal-body ili isichukue nafasi nyingi */
+.modal-header, .modal-body, .modal-footer {
+    padding: 0.75rem 1rem;
+}
+#readersList .list-group-item {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+    line-height: 1.2;
+}
+.badge2 {
+    color: #2b302df0;
+    border-radius: 7%;
+    background-color: #e9ebe9f0;
+}
+</style>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="m-0">Dashboard</h1>
+                    <div class="text-muted">
+                        Last update: <b>{{ sms.relative_time }}</b>
+                    </div>
+                </div>
+            </div>               
+               <div class="container-fluid">
+                    <!-- Alert -->
+                    <div class="alert-warning d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5><i class="fas fa-exclamation-triangle"></i> Notified! {{ sms.relative_time }}</h5>
+                            {{ sms.sms }}
+                        </div>
+                        <a href="#" class="btn-dark">{{ sms.sender }}</a>
+                    </div>
+
+                    <!-- Small boxes -->
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3>S.3177</h3>
+                                    <p>KIBINDU SECONDARY SCHOOL</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-university"></i></div>
+                                <a href="#" class="small-box-footer"><i class="fas fa-arrow-circle-right"></i> <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3>{{ all }}</h3>
+                                    <p>All Students</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-users"></i></div>
+                                <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3>{{ truancy }}</h3>
+                                    <p>Truancies</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-user-times"></i></div>
+                                <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3>{{ active }}</h3>
+                                    <p>Active students</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-user-check" style="color: #28a745;"></i></div>
+                                <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Main row -->
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <!-- Candidate registration table -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Class Informations</h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Form</th>
+                                                <th class="text-right">Students</th>
+                                                <th class="text-right">M</th>
+                                                <th class="text-right">F</th>
+                                                <th class="text-right">Active</th>
+                                    
+                                                <th class="text-right">Truancy</th>
+                                            </tr>
+                                        </thead>
+<tbody>
+    {% set forms = ['Form1', 'Form2', 'Form3', 'Form4', 'Form5', 'Form6'] %}
+    {% for form in forms %}
+    {% set data = stats.get(form, {'active_total': 0, 'active_boys': 0, 'active_girls': 0, 'inactive_total': 0, 'inactive_boys': 0, 'inactive_girls': 0}) %}
+    <tr>
+        <td>{{ form|replace('Form', 'Form ') }}</td>
+        <td class="text-right">{{ data.active_total + data.inactive_total }}</td>
+        <td class="text-right">{{ data.active_boys + data.inactive_boys }}</td>
+        <td class="text-right">{{ data.active_girls + data.inactive_girls }}</td>
+        <td class="text-right">{{ data.active_total }}</td>
+        <td class="text-right"><span class="badge bg-success">{{ data.inactive_total }}</span></td>
+    </tr>
+    {% endfor %}
+</tbody>
+                                    </table>
+                                </div>
+                            </div>
+<!-- Fomu ya kutuma SMS (tayari ipo) -->
+<div class="card mt-3">
+    <div class="card-header">
+        <h3 class="card-title">NOTIFICATIONS    & SUGGESTIONS BOX</h3>
+    </div>
+    <div class="card-body">
+        <form id="sendSmsForm" method="POST" action="{{ url_for('send_sms') }}">
+            <div class="form-group">
+                <label>sender name:</label>
+                <input type="text" class="form-control" name="sender" required placeholder="eg: Mwanaisha">
+            </div>
+            <div class="form-group">
+                <label>Message:</label>
+                <textarea class="form-control" name="sms" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Send sms</button>
+        </form>
+    </div>
+</div>
+
+<!-- SMS Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Notified or suggested</h3>
+            </div>
+            <div class="card-body" id="smsCardsContainer" style="max-height: 500px; overflow-y: auto;">
+                <div class="text-center">Loading messages...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ya kuonyesha wasomaji -->
+<div class="modal fade" id="readersModal" tabindex="-1" aria-labelledby="readersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="readersModalLabel">Sms Viewers</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="readersList">
+                <p>Loading...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- ... existing dashboard content ... -->
+
+
+{% block extra_js %}
+<!-- JavaScript maalum kwa marks entry (keyboard, validation) -->
+
+<script>
+        // Angalia kama kuna element ya flash message
+        var flash = document.getElementById('flashMessage');
+        if (flash) {
+            // Baada ya sekunde 3 (3000ms), anza kutoweka
+            setTimeout(function() {
+                flash.style.opacity = '0';
+                // Baada ya transition, toa kabisa kwenye DOM
+                setTimeout(function() {
+                    flash.remove();
+                }, 500);
+            }, 3000); // muda wa kuonekana (ms)
+        }
+
+
+</script>
+<script>
+// ==================== SMS FUNCTIONS ====================
+let smsObserver = null;
+let smsContainer = document.getElementById('smsCardsContainer');
+//========Time Ago=========================================
+function timeAgo(date) {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    if (seconds < 0) return "just now";
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) return interval + (interval === 1 ? " year ago" : " years ago");
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) return interval + (interval === 1 ? " month ago" : " months ago");
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) return interval + (interval === 1 ? " day ago" : " days ago");
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return interval + (interval === 1 ? " hour ago" : " hours ago");
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return interval + (interval === 1 ? " minute ago" : " minutes ago");
+    return Math.floor(seconds) + (seconds === 1 ? " second ago" : " seconds ago");
+}
+async function loadSMS() {
+    if (!smsContainer) return;
+    try {
+        const response = await fetch('/api/get-sms');
+        const smsList = await response.json();
+        if (smsList.error) throw new Error(smsList.error);
+        
+        let html = '';
+        for (let sms of smsList) {
+            const readClass = sms.is_read ? '' : 'unread';
+            html += `
+                <div class="sms-card ${readClass}" data-sms-id="${sms.id}">
+                    <div class="sms-header">
+                        <span class="sms-sender"><i class="fas fa-user"></i> ${escapeHtml(sms.sender)}</span>
+                        <span class="sms-time"><i class="far fa-clock"></i> ${timeAgo(sms.time_sent)}</span>
+                    </div>
+                    <div class="sms-body">${escapeHtml(sms.sms)}</div>
+                    <div class="sms-footer">
+                        <span class="read-count-badge" data-sms-id="${sms.id}">
+                            <i class="fas fa-eye"></i> ${sms.read_count || 0} view
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+        smsContainer.innerHTML = html || '<div class="alert alert-info">No messages yet.</div>';
+        
+        // Re-attach click listeners
+        document.querySelectorAll('.read-count-badge').forEach(badge => {
+            badge.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showReadersModal(badge.getAttribute('data-sms-id'));
+            });
+        });
+        
+        // Intersection Observer
+        if (smsObserver) smsObserver.disconnect();
+        smsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const card = entry.target;
+                    const smsId = card.getAttribute('data-sms-id');
+                    if (card.classList.contains('unread')) {
+                        markSMSAsRead(smsId, card);
+                        smsObserver.unobserve(card);
+                    }
+                }
+            });
+        }, { root: smsContainer, threshold: 0.5 });
+        
+        document.querySelectorAll('.sms-card').forEach(card => smsObserver.observe(card));
+    } catch (err) {
+        console.error(err);
+        smsContainer.innerHTML = '<div class="alert alert-danger">Failed to load messages.</div>';
+    }
+}
+
+async function markSMSAsRead(smsId, cardElement) {
+    try {
+        const response = await fetch('/api/mark-sms-read', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({sms_id: smsId})
+        });
+        const result = await response.json();
+        if (result.status === 'ok') {
+            cardElement.classList.remove('unread');
+            // optionally update read count badge
+        }
+    } catch (err) {
+        console.error('Failed to mark as read', err);
+    }
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// Global variable to store modal instance
+let readersModalInstance = null;
+
+async function showReadersModal(smsId) {
+    const modalBody = document.getElementById('readersList');
+    const modalElement = document.getElementById('readersModal');
+    if (!modalBody || !modalElement) return;
+    
+    modalBody.innerHTML = '<p>Loading...</p>';
+    
+    // Try to use Bootstrap Modal API
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        if (!readersModalInstance) {
+            readersModalInstance = new bootstrap.Modal(modalElement);
+        }
+        readersModalInstance.show();
+    } else if (typeof $ !== 'undefined') {
+        $(modalElement).modal('show');
+    } else {
+        // Fallback: show manually
+        modalElement.style.display = 'block';
+        modalElement.classList.add('show');
+        document.body.classList.add('modal-open');
+        // Add backdrop
+        let backdrop = document.querySelector('.modal-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            document.body.appendChild(backdrop);
+        }
+    }
+    
+    // Fetch readers
+    try {
+        const response = await fetch(`/api/sms-readers/${smsId}`);
+        const readers = await response.json();
+        if (readers.error) throw new Error(readers.error);
+        if (readers.length === 0) {
+            modalBody.innerHTML = '<p>Hakuna aliyeona ujumbe huu bado.</p>';
+        } else {
+            let html = '<ul class="list-group">';
+            readers.forEach(r => {
+                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                            ${escapeHtml(r.username)}
+                            <span class="badge2 badge-secondary">${new Date(r.read_at).toLocaleString()}</span>
+                         </li>`;
+            });
+            html += '</ul>';
+            modalBody.innerHTML = html;
+        }
+    } catch (err) {
+        modalBody.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+    }
+}
+
+// Function to close modal manually (will be called by close button)
+function closeReadersModal() {
+    const modalElement = document.getElementById('readersModal');
+    if (!modalElement) return;
+    if (readersModalInstance) {
+        readersModalInstance.hide();
+    } else if (typeof $ !== 'undefined') {
+        $(modalElement).modal('hide');
+    } else {
+        // Manual hide
+        modalElement.style.display = 'none';
+        modalElement.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
+    }
+}
+
+// Add event listeners for close buttons when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    const modalElement = document.getElementById('readersModal');
+    if (modalElement) {
+        // Find all close buttons inside this modal (X button and maybe Cancel)
+        const closeButtons = modalElement.querySelectorAll('[data-dismiss="modal"], [data-bs-dismiss="modal"], .close');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', closeReadersModal);
+        });
+        // Also close when clicking on backdrop if using manual mode
+        modalElement.addEventListener('click', function(e) {
+            if (e.target === modalElement && !readersModalInstance && typeof $ === 'undefined') {
+                closeReadersModal();
+            }
+        });
+    }
+});
+// ==================== SEND SMS FORM ====================
+document.addEventListener('DOMContentLoaded', function() {
+    const sendForm = document.getElementById('sendSmsForm');
+    if (sendForm) {
+        sendForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(sendForm);
+            const data = {
+                sender: formData.get('sender'),
+                sms: formData.get('sms')
+            };
+            try {
+                const response = await fetch('/api/send-sms', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (response.ok && result.status === 'ok') {
+                    alert('Ujumbe umetumwa kikamilifu!');
+                    sendForm.reset();
+                    loadSMS();  // reload list
+                } else {
+                    alert('Hitilafu: ' + (result.error || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Hitilafu ya mtandao. Jaribu tena.');
+            }
+        });
+    }
+    
+    // Load SMS on page load
+    loadSMS();
+});
+</script>
+
+{% endblock %}

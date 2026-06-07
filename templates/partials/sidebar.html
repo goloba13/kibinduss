@@ -1,0 +1,101 @@
+<!-- templates/partials/sidebar.html -->
+<aside class="main-sidebar" id="sidebar">
+    <a href="/" class="brand-link">
+        <span class="brand-image"><i class="fas fa-graduation-cap"></i></span>
+        <span class="brand-text"><b>KIBINDU SS</b></span>
+    </a>
+    <div class="sidebar">
+        <nav class="mt-2">
+            <ul class="nav-sidebar">
+                <!-- Dashboard menu -->
+                <li class="nav-item {% if request.path == url_for('dashboard') %}menu-open{% endif %}">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-home"></i>
+                        <p>Home <i class="fas fa-angle-left right"></i></p>
+                    </a>
+                    <ul class="nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.path == url_for('dashboard') %}active{% endif %}">
+                                <i class="far fa-circle"></i>
+                                <p>Dashboard </p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+                <!-- Marking (CA) -->
+                <li class="nav-item {% if request.path.startswith('/isal') or request.path.startswith('/marks-entry') %}menu-open{% endif %}">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-file"></i>
+                        <p>Candidates<i class="fas fa-angle-left right"></i></p>
+                    </a>
+                    <ul class="nav-treeview">
+                        
+                        <li class="nav-item">
+                            <a href="{{ url_for('marks_entry') }}" class="nav-link {% if request.path == url_for('marks_entry') %}active{% endif %}">
+                                <i class="far fa-circle"></i> <p>Marks Entry</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('isal') }}" class="nav-link {% if request.path == url_for('isal') %}active{% endif %}">
+                                <i class="far fa-circle"></i> <p>Isal</p>
+                            </a>
+                        </li>        
+                                        
+                    </ul>
+                </li>
+
+                <!-- Academic -->
+                <li class="nav-item {% if request.path.startswith('/teachers-work') or request.path.startswith('/class-teachers') or request.path.startswith('/class-teachers') or request.path.startswith('/timetables') or request.path.startswith('/teaching-progress') %}menu-open{% endif %}">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-calendar-alt"></i>
+                        <p>Academic <i class="fas fa-angle-left right"></i></p>
+                    </a>
+                    <ul class="nav-treeview">
+                        <li class="nav-item"><a href="{{ url_for('teachers_work') }}" class="nav-link {% if request.path == url_for('teachers_work') %}active{% endif %}"><i class="far fa-circle"></i> <p>Responsibilities</p></a></li>           
+                       
+                    </ul>
+                </li>
+
+                <!-- Teacher On Duty -->
+                <li class="nav-item {% if request.path.startswith('/week-details') or request.path.startswith('/duty-history') or request.path.startswith('/duty-rotation') %}menu-open{% endif %}">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-pencil-alt"></i>
+                        <p>Teacher on duty <i class="fas fa-angle-left right"></i></p>
+                    </a>
+                    <ul class="nav-treeview">
+                        <li class="nav-item"><a href="{{ url_for('week_details') }}" class="nav-link {% if request.path == url_for('week_details') %}active{% endif %}"><i class="far fa-circle"></i> <p>T.o.d form</p></a></li>
+                        <li class="nav-item"><a href="{{ url_for('duty_rotation') }}" class="nav-link {% if request.path == url_for('duty_rotation') %}active{% endif %}"><i class="far fa-circle"></i> <p>Duty</p></a></li>
+                        <li class="nav-item"><a href="{{ url_for('duty_history') }}" class="nav-link {% if request.path == url_for('duty_history') %}active{% endif %}"><i class="far fa-circle"></i> <p>Duty History</p></a></li>
+                    </ul>
+                </li>
+
+                <!-- Mhasibu -->
+                <li class="nav-item {% if request.path.startswith('/results') or request.path.startswith('/analysis') or request.path.startswith('/download-results') %}menu-open{% endif %}">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-chart-bar"></i>
+                        <p>Results <i class="fas fa-angle-left right"></i></p>
+                    </a>
+                    <ul class="nav-treeview">
+                        <li class="nav-item"><a href="{{ url_for('results') }}" class="nav-link {% if request.path == url_for('results') %}active{% endif %}"><i class="far fa-circle"></i> <p>Results</p></a></li>
+                        <li class="nav-item"><a href="{{ url_for('analysis') }}" class="nav-link {% if request.path == url_for('analysis') %}active{% endif %}"><i class="far fa-circle"></i> <p>Analysis</p></a></li>
+                        <li class="nav-item"><a href="{{ url_for('download_results_page') }}" class="nav-link {% if request.path == url_for('download_results_page') %}active{% endif %}"><i class="far fa-circle"></i> <p>Download</p></a></li>
+                    </ul>
+                </li>
+
+                <!-- Documents -->
+                <li class="nav-item {% if request.path.startswith('/sms') %}menu-open{% endif %}">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-share-alt"></i>
+                        <p>Share<i class="fas fa-angle-left right"></i></p>
+                    </a>
+                    <ul class="nav-treeview">
+                        <li class="nav-item"><a href="{{ url_for('send_file_page') }}" class="nav-link {% if request.path == url_for('send_file_page') %}active{% endif %}"><i class="far fa-circle"></i> <p>Send Files</p></a></li>
+                        
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</aside>

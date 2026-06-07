@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}KIBINDU SS{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/slide1.png') }}">
+    
+    <!-- Preconnect kwa vyanzo vya nje – ili kupunguza muda wa DNS lookup -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Google Fonts – kwa defer (isizuie) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
+    
+    <!-- Font Awesome – deferred -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    
+    <!-- Critical CSS (inline) – inatosha kuonyesha sehemu ya juu ya ukurasa -->
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a2418;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background-color: #0a2418;
+        }
+        .top-bar, .main-content, footer {
+            position: relative;
+            z-index: 10;
+        }
+        .top-bar {
+            background: linear-gradient(rgba(30, 74, 61, 0.7), rgba(30, 74, 61, 0.7)),
+                        url("{{ url_for('static', filename='img/slide7.png') }}") center/cover no-repeat;
+            backdrop-filter: blur(4px);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: inherit;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        .brand img {
+            height: 40px;
+            width: auto;
+            max-height: 40px;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            padding: 2rem;
+            transition: transform 0.2s;
+        }
+        h1 {
+            color: #1e4a3d;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #1e4a3d;
+        }
+        input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #2ecc71;
+            box-shadow: 0 0 0 3px rgba(46,204,113,0.2);
+        }
+        .btn {
+            background: #1e4a3d;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s, transform 0.1s;
+        }
+        .btn:hover {
+            background: #0f2c23;
+            transform: scale(1.01);
+        }
+        .note {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #2d6a4f;
+            font-size: 0.9rem;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            color: #a3e4c2;
+            font-size: 0.8rem;
+            background: rgba(10,36,24,0.6);
+        }
+        /* Styles za ziada zitaongezwa na non-critical.css (kama particles, animations n.k) */
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <div class="top-bar">
+        <a href="{{ url_for('index') }}" class="brand">
+            <img src="{{ url_for('static', filename='img/slide1.png') }}" alt="Logo">
+            <span>Kibindu Secondary School</span>
+        </a>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div class="prepo">
+                <a href="{{ url_for('index') }}"><i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <footer>
+        <strong>Copyright © 2026 KIBINDU.</strong> All rights reserved.
+    </footer>
+
+    <!-- Zana za ziada – hazizuii kuonyeshwa ukurasa -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js" async></script>
+    <script>
+        // Chelewesha uanzishaji wa particles ili usizuie mambo muhimu
+        window.addEventListener('load', function() {
+            if (typeof particlesJS !== 'undefined') {
+                particlesJS("particles-js", {
+                    "particles": {
+                        "number": { "value": 90, "density": { "enable": true, "value_area": 800 } },
+                        "color": { "value": ["#a3e4c2", "#c8e6c9", "#f1c40f", "#2ecc71", "#ffffff"] },
+                        "shape": { "type": "circle", "stroke": { "width": 0, "color": "#000000" } },
+                        "opacity": { "value": 0.9, "random": false, "anim": { "enable": false } },
+                        "size": { "value": 7, "random": true, "anim": { "enable": false } },
+                        "line_linked": { "enable": true, "distance": 140, "color": "#a3e4c2", "opacity": 0.3, "width": 1 },
+                        "move": { "enable": true, "speed": 1.2, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false }
+                    },
+                    "interactivity": {
+                        "detect_on": "canvas",
+                        "events": {
+                            "onhover": { "enable": true, "mode": "repulse" },
+                            "onclick": { "enable": true, "mode": "push" }
+                        },
+                        "modes": {
+                            "repulse": { "distance": 100, "duration": 0.4 },
+                            "push": { "particles_nb": 3 }
+                        }
+                    },
+                    "retina_detect": true
+                });
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

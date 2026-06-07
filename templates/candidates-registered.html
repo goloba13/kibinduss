@@ -1,0 +1,106 @@
+{% extends "base2.html" %}
+
+{% block title %}Marks Entry | KIBINDU{% endblock %}
+
+{% block content %}
+<!-- Maudhui ya marks entry yote hapa -->
+<!-- Content Header -->
+<div class="content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="m-0">Wanafunzi Wote</h1>
+        <div>
+            <button class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Ongeza Mwanafunzi</button>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Orodha ya Wanafunzi</h3>
+                    <div class="card-tools float-right">
+                        <div class="input-group input-group-sm" style="width: 200px;">
+                            <input type="text" name="table_search" class="form-control float-right" placeholder="Tafuta...">
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Jina la Mwanafunzi</th>
+                                <th>Jinsia</th>
+                                <th>Kidato</th>
+                                <th>Namba ya Mtihani</th>
+                                <th>Mkoa</th>
+                                <th>Vitendo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Godlisten P. Shomi</td>
+                                <td>M</td>
+                                <td>Form IV</td>
+                                <td>4S3177-0001</td>
+                                <td>Pwani</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Juma M. Mwinyi</td>
+                                <td>M</td>
+                                <td>Form IV</td>
+                                <td>4S3177-0002</td>
+                                <td>Pwani</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Asha H. Mohamed</td>
+                                <td>F</td>
+                                <td>Form II</td>
+                                <td>2S3177-0015</td>
+                                <td>Pwani</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <!-- zaidi -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer clearfix">
+                    <ul class="pagination pagination-sm m-0 float-right">
+                        <li class="page-item"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#">»</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript maalum kwa marks entry (keyboard, validation) -->
+<script>
+    // ...
+</script>
+{% endblock %}

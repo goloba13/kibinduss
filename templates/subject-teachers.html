@@ -1,0 +1,92 @@
+{% extends "base2.html" %}
+
+{% block title %}Marks Entry | KIBINDU{% endblock %}
+
+{% block content %}
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="m-0">Walimu wa Masomo</h1>
+        <div>
+            <button class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Weka Mwalimu wa Somo</button>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Orodha ya Masomo na Walimu</h3>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Somo</th>
+                                <th>Kidato</th>
+                                <th>Jina la Mwalimu</th>
+                                <th>Vitendo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Mathematics</td>
+                                <td>Form I - IV</td>
+                                <td>John P. Mrema</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Kiswahili</td>
+                                <td>Form I - IV</td>
+                                <td>Anna M. Kisaka</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Physics</td>
+                                <td>Form III - IV</td>
+                                <td>Godlisten P. Shomi</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Chemistry</td>
+                                <td>Form III - IV</td>
+                                <td>James K. Mwangi</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript maalum kwa marks entry (keyboard, validation) -->
+<script>
+    // ...
+</script>
+{% endblock %}
+

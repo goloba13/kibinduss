@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index Sheet - KIBINDU</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; padding: 20px; font-family: 'Segoe UI', sans-serif; }
+        .card { max-width: 1200px; margin: 0 auto; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .results-table th { background: #1e4a3d; color: white; }
+        .loading { text-align: center; padding: 20px; display: none; }
+    </style>
+</head>
+<body>
+<div class="card p-4">
+    <h2 class="mb-4">📄 Index Sheet (S3177/xxxx)</h2>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label class="form-label">Kidato</label>
+            <select id="classSelect" class="form-select">
+                <option value="">-- Chagua --</option>
+                {% for c in classes %}
+                <option value="{{ c }}">{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Kuanzia index #</label>
+            <input type="number" id="startIndex" class="form-control" value="1" min="1">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Hadi index #</label>
+            <input type="number" id="endIndex" class="form-control" placeholder="Zote">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Mwaka</label>
+            <select id="yearSelect" class="form-select">
+                <option value="">-- Sio muhimu --</option>
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+            <button id="searchBtn" class="btn btn-primary flex-grow-1">🔍 Tazama</button>
+            <button id="exportExcelBtn" class="btn btn-success flex-grow-1" disabled>📥 Excel</button>
+        </div>
+    </div>
+
+    <div id="loading" class="loading">
+        <div class="spinner-border text-success"></div> Inapakia...
+    </div>
+
+    <div id="resultsContainer"></div>
+</div>
+
+<script>
+    (function() {
+        const searchBtn = document.getElementById('searchBtn');
+        const exportBtn = document.getElementById('exportExcelBtn');
+        const loading = document.getElementById('loading');
+        const container = document.getElementById('resultsContainer');
+
+        if (!searchBtn) return;
+
+        searchBtn.addEventListener('click', async function() {
+            const classValue = document.getElementById('classSelect').value;
+            const startIndex = parseInt(document.getElementById('startIndex').value);
+            let endIndex = document.getElementById('endIndex').value;
+            endIndex = endIndex ? parseInt(endIndex) : null;
+            const year = document.getElementById('yearSelect').value || null;
+
+            if (!classValue) {
+                alert('Tafadhali chagua kidato.');
+                return;
+            }
+            if (isNaN(startIndex) || startIndex < 1) {
+                alert('Start index lazima iwe namba chanya.');
+                return;
+            }
+            if (endIndex !== null && endIndex < startIndex) {
+                alert('End index lazima iwe kubwa au sawa na start index.');
+                return;
+            }
+
+            loading.style.display = 'block';
+            container.innerHTML = '';
+            exportBtn.disabled = true;  // disable until data loaded
+
+            try {
+                const response = await fetch('/api/isal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        class: classValue,
+                        start_index: startIndex,
+                        end_index: endIndex,
+                        year: year
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText.substring(0, 100)}`);
+                }
+
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="alert alert-warning">Hakuna wanafunzi wanaolingana.</div>';
+                    exportBtn.disabled = true;
+                    return;
+                }
+
+                // Create table using DOM (safe)
+                const table = document.createElement('table');
+                table.className = 'table table-bordered results-table';
+                const thead = document.createElement('thead');
+                thead.innerHTML = '<tr><th>Index</th><th>Jina la Mwanafunzi</th><th>Jinsia</th></tr>';
+                table.appendChild(thead);
+                const tbody = document.createElement('tbody');
+
+                data.forEach(student => {
+                    const row = document.createElement('tr');
+                    const tdIndex = document.createElement('td');
+                    tdIndex.textContent = student.index_number || '';
+                    const tdName = document.createElement('td');
+                    tdName.textContent = student.student_name || '';
+                    const tdSex = document.createElement('td');
+                    tdSex.textContent = student.sex || '-';
+                    row.appendChild(tdIndex);
+                    row.appendChild(tdName);
+                    row.appendChild(tdSex);
+                    tbody.appendChild(row);
+                });
+
+                table.appendChild(tbody);
+                container.appendChild(table);
+                exportBtn.disabled = false;  // enable export after data loaded
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Hitilafu: ' + err.message);
+                exportBtn.disabled = true;
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+exportBtn.addEventListener('click', async function() {
+    const classValue = document.getElementById('classSelect').value;
+    const startIndex = parseInt(document.getElementById('startIndex').value);
+    let endIndex = document.getElementById('endIndex').value;
+    endIndex = endIndex ? parseInt(endIndex) : null;
+    const year = document.getElementById('yearSelect').value || null;
+
+    if (!classValue) {
+        alert('Tafadhali chagua kidato kwanza.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/export-index-sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                class: classValue,
+                start_index: startIndex,
+                end_index: endIndex,
+                year: year
+            })
+        });
+
+        if (!response.ok) {
+            // Jaribu kusoma kama JSON, kama siwezi soma kama text
+            let errorMsg = 'Kosa la server';
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const errData = await response.json();
+                errorMsg = errData.error || errorMsg;
+            } else {
+                const text = await response.text();
+                errorMsg = text.substring(0, 200); // sehemu ya kwanza
+            }
+            throw new Error(errorMsg);
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `IndexSheet_${classValue}_${startIndex}_${endIndex || 'all'}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        alert('Hitilafu wakati wa kuexport: ' + err.message);
+    }
+});
+    })();
+</script>
+</body>
+</html>

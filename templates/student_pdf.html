@@ -1,0 +1,44 @@
+from weasyprint import HTML, CSS
+from io import BytesIO
+
+@app.route('/student-pdf', methods=['POST'])
+def student_pdf():
+    data = request.json
+    student_id = data.get('student_id')
+    exam_type_id = data.get('exam_type_id')
+    class_name = data.get('class')
+    if not student_id or not exam_type_id or not class_name:
+        return jsonify({'error': 'Missing parameters'}), 400
+
+    try:
+        # Pata matokeo ya darasa zima
+        result = supabase.rpc('get_class_full_results', {
+            'p_exam_type_id': int(exam_type_id),
+            'p_class': class_name
+        }).execute()
+        payload = result.data
+        students = payload.get('students', [])
+        # Tafuta mwanafunzi mahususi
+        student_data = next((s for s in students if s['student_id'] == student_id), None)
+        if not student_data:
+            return jsonify({'error': 'Student not found'}), 404
+
+        # Pia tunahitaji orodha ya masomo (kwa mpangilio)
+        subjects_list = payload.get('subjects_list', [])
+
+        # Chora HTML
+        html_string = render_template('student_report_pdf.html', 
+                                      student=student_data,
+                                      subjects_list=subjects_list,
+                                      exam_type_id=exam_type_id,
+                                      class_name=class_name)
+        # Geuza kuwa PDF
+        pdf_file = HTML(string=html_string).write_pdf(
+            stylesheets=[CSS(string='@page { size: A4; margin: 1.5cm; }')]
+        )
+        filename = f"Report_{student_data['student_name'].replace(' ', '_')}.pdf"
+        return send_file(BytesIO(pdf_file), as_attachment=True, 
+                         download_name=filename, 
+                         mimetype='application/pdf')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

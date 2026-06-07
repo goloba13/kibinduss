@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* ========== STYLE ZA MATOKEO YA MWANAFUNZI ========== */
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.results-table thead tr {
+    background: linear-gradient(135deg, #1e4a3d, #0f2c23);
+    color: white;
+}
+
+.results-table th {
+    padding: 1rem 1.2rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #2c6e5c;
+}
+
+.results-table td {
+    padding: 0.5rem 1.2rem;
+    border-bottom: 1px solid #e2e8f0;
+    color: #1a2c2e;
+    vertical-align: middle;
+}
+
+.results-table tbody tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+.results-table tbody tr:hover {
+    background-color: #eef2f5;
+    transition: background 0.2s ease;
+}
+
+.results-table td:first-child {
+    font-weight: 500;
+}
+
+.results-table td:last-child {
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Kadi kuu na header */
+.school-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.school-header h2 {
+    font-size: 1.8rem;
+    color: #1e4a3d;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.student-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #0b2f26;
+    margin-bottom: 0.25rem;
+}
+
+.student-class {
+    font-size: 1.1rem;
+    color: #4a6a5e;
+    margin: 0.25rem 0;
+}
+
+/* Sehemu ya kila mtihani */
+.exam-section {
+    margin-bottom: 2rem;
+    background: white;
+    border-radius: 24px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.434);
+}
+
+.exam-header h3 {
+    background: #e9f0ed;
+    padding: 0.6rem 1.2rem;
+    border-radius: 40px;
+    color: #1e4a3d;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+/* Muhtasari (summary) */
+.summary {
+    background: #f0f6f4;
+    padding: 0.8rem 1.2rem;
+    border-radius: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin: 1rem 0;
+    font-weight: 500;
+    color: #1e4a3d;
+}
+
+.summary p {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+/* Kadi kuu */
+.card {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 28px;
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15);
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 1200px;
+    width: 90%;
+    border: none;
+}
+
+/* Urahisi kwenye simu */
+@media (max-width: 680px) {
+    .card {
+        padding: 1rem;
+        width: 95%;
+    }
+    .results-table th,
+    .results-table td {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    .student-name {
+        font-size: 1.3rem;
+    }
+    .school-header h2 {
+        font-size: 1.4rem;
+    }
+    .exam-header h3 {
+        font-size: 1rem;
+        padding: 0.4rem 1rem;
+    }
+    .summary {
+        flex-direction: column;
+        text-align: center;
+    }
+    .summary p {
+        font-size: 0.85rem;
+    }
+}
+
+/* Ikiwa ungependa background ya ukurasa */
+body {
+    background: #f4f7fc;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+</style>
+<div class="card">
+    <div class="school-header">
+        <h2>Matokeo ya:</h2>
+        <p class="student-name">{{ data.student.student_name }}</p>
+        <p class="student-class">Kidato: {{ data.student.current_class }}</p>
+    </div>
+
+    {% for exam in data.results %}
+    <div class="exam-section">
+        <div class="exam-header">
+            <h3>{{ exam.exam_name }} - Muhula {{ exam.term }} ({{ exam.year }})</h3>
+        </div>
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Masomo</th>
+                    <th>Alama</th>
+                    <th>Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subj in exam.marks_data %}
+                <tr>
+                    <td>{{ subj.subject }}</td>
+                    <td>{{ subj.marks }}</td>
+                    <td>{{ subj.grade }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="summary">
+ <div class="summary">
+    <p><strong>Jumla ya Alama:</strong> {{ exam.total_marks }}</p>
+    <p><strong>Wastani:</strong> {{ exam.average }}</p>
+    <p><strong>Jumla ya Points:</strong> {{ exam.total_points if exam.total_points is not none else 'X' }}</p>
+    <p><strong>Division:</strong> {{ exam.division if exam.division is not none else 'X' }}</p>
+    <p><strong>Nafasi (Position):</strong> 
+        {% if exam.position is not none %}
+            {{ exam.position }} kati ya {{ exam.total_students }}
+        {% else %}
+            Mtoro
+        {% endif %}
+    </p>
+</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

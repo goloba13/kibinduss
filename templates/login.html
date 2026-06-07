@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Ingia | WALIMU{% endblock %}
+
+{% block content %}
+    <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 8px; margin-bottom: 1rem;">
+        <i class="fas fa-exclamation-circle"></i> You are not authorized to access that location.
+    </div>
+<div class="card">
+    <h2 class="text-center">Kibindu secondary school</h2>
+    
+    {% if error %}
+        <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+    {% endif %}
+    
+    <form method="post">
+        <div class="form-group">
+            <label for="username"><i class="fas fa-user" style="margin-right: 8px;"></i>Username</label>
+            <input type="text" id="username" name="username" required autofocus>
+        </div>
+        <div class="form-group">
+            <label for="password"><i class="fas fa-key" style="margin-right: 8px;"></i>Password</label>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+            <input type="password" id="password" name="password" placeholder="Enter password" required>
+            <i id="eyeIcon" class="fa fa-eye" onclick="togglePassword()"></i>
+        </div>
+        <button type="submit" class="btn"><i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>Login</button>
+    </form>
+    
+    <div class="note">
+        <p>Tumia <a href="#" class="green-link"><strong>admin / admin</strong></a> kwa majaribio</p>
+        <p><a href="{{ url_for('index') }}" class="green-link">← Rudi kwenye ukurasa wa kuangalia matokeo</a></p>
+    </div>
+</div>
+
+<style>
+    /* Weka style baada ya zingine na kwa specificity ya juu */
+    a.green-link {
+        color: #03b129;      /* Rangi ya kijani inayong'aa */
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    a.green-link:hover {
+        color: #555d02;      /* Kijani iliyokolea wakati wa kuelea */
+        text-decoration: underline;
+    }
+    /* Hakikisha maandishi mengine hayana rangi isiyotakiwa */
+    .note p {
+        color: #2c3e50;
+    }
+.card h2 {
+    color: #1e4a3d;
+    border-bottom: 4px solid #1a522615;
+    padding-left: 1rem;
+}
+</style>
+
+<script>
+    function togglePassword() {
+        var input = document.getElementById('password');
+        var icon = document.getElementById('eyeIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,327 @@
+{% extends "academic_base.html" %}
+
+{% block title %}Mtaaluma | KIBINDU{% endblock %}
+
+{% block content %}
+<style>
+        /* Content Header */
+        .content-header {
+            padding: 1.5rem 2rem 0.5rem;
+        }
+
+        .container-fluid {
+            padding: 0 2rem;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.75rem;
+        }
+
+        .col-lg-3, .col-lg-4, .col-lg-8, .col-6, .col-11, .col-1 {
+            padding: 0 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .col-lg-3 { width: 25%; }
+        .col-lg-4 { width: 33.33%; }
+        .col-lg-8 { width: 66.67%; }
+        .col-6 { width: 50%; }
+        .col-11 { width: 91.666%; }
+        .col-1 { width: 8.333%; }
+
+        /* Small boxes */
+        .small-box {
+            border-radius: 8px;
+            color: rgb(40, 40, 245);
+            padding: 1.5rem 1rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .small-box .inner h3 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .small-box .icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 4rem;
+            opacity: 0.3;
+        }
+/*  hapo juu nimeongeza kama haitofaa basi nitaondoa  */            
+        .small-box:hover i {
+            transform: scale(1.7); /* kuongeza ikoni zaidi */
+            transition: transform 0.3s ease;
+            color: rgb(76, 4, 130);
+            animation: shake 0.3s ease-in-out;
+        }   
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-3px); }
+            100% { transform: translateX(0); }
+        }
+        .small-box-footer:hover i {          
+           animation: pulse 1s infinite;
+            
+        }           
+        @keyframes pulse {
+            0% { color: currentColor; }
+            50% { color: #046318; } /* Badilisha na rangi unayotaka */
+            100% { color: currentColor; }
+        }
+
+        .small-box-footer {
+            color: rgba(59, 13, 10, 0.8);
+            text-decoration: none;
+            display: block;
+            margin-top: 1rem;
+        }
+
+        .bg-info { background: #05821e; }
+        .bg-success { background: #28a745; }
+        .bg-danger { background: #067617; }
+        .bg-warning { background: #04790a; color: #212529; }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            padding: 1rem 2.1rem;
+            border-bottom: 1px solid #f8f8fc;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            overflow-x: auto;
+           -webkit-overflow-scrolling: touch;
+        }
+
+        /* Table */
+        .table {
+            width: 70%;
+            border-collapse: collapse;
+        }
+/*nyongeza za css kwa kufanya table ziwe vizuri ............*/
+
+
+        .table th, .table td {
+            padding: 0.7rem;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .badge.bg-success {
+            background: #9b04049b;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            color: white;
+        }
+
+        .pull-right {
+            float: right;
+        }
+
+        /* Info box */
+        .info-box {
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-box-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .progress {
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            margin: 0.5rem 0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: white;
+            border-radius: 4px;
+            width: 0%;
+        }
+
+        .text-right { text-align: right; }
+        .text-bold { font-weight: 600; }
+        .text-muted { opacity: 0.8; }
+
+        /* Alert */
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-dark {
+            background: #343a40;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+ /* chat container css imewekwa hapa chini  */       
+.chat-container {
+    width: 300px;
+    height: 400px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;
+    background: #e5ddd5;
+}
+
+.message {
+    max-width: 75%;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 10px;
+    position: relative;
+    font-size: 14px;
+}
+
+.sent {
+    background: #dcf8c6;
+    margin-left: auto;
+}
+
+.received {
+    background: white;
+    margin-right: auto;
+}
+
+.meta {
+    font-size: 11px;
+    text-align: right;
+    margin-top: 3px;
+    color: gray;
+}
+
+.status {
+    margin-left: 5px;
+}
+
+.seen-count {
+    font-size: 10px;
+    margin-left: 3px;
+    color: blue;
+}
+.send-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: green;
+}
+
+.send-btn:hover {
+    color: #25D366; /* green ya WhatsApp */
+}
+
+.send-btn:focus {
+    outline: none;
+}
+</style>
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="m-0">Dashboard</h1>
+                    
+                </div>
+            </div>               
+               <div class="container-fluid">
+        
+
+                    <!-- Small boxes -->
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3>S.3177</h3>
+                                    <p>KIBINDU SECONDARY SCHOOL</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-university"></i></div>
+                                <a href="#" class="small-box-footer">Click <i class="fas fa-arrow-circle-right"></i></a>
+                                <script>
+    (function() {
+        const link = document.querySelector('.small-box-footer');
+        if (link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert("Necta registration: S3177\nSchool registration: S3575\nVote Code: 7B8\nSub vote: 28016");
+            });
+        }
+    })();
+</script>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3>Exam</h3>
+                                    <p>Invigilators Table</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-users"></i></div>
+                                <a href="#" class="small-box-footer">Click <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3>Exam</h3>
+                                    <p>Exam Timetable</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-user-times"></i></div>
+                                <a href="{{ url_for('exam_table') }}" class="small-box-footer">Click <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3>Exam</h3>
+                                    <p>Sitting plan</p>
+                                </div>
+                                <div class="icon"><i class="fas fa-user-check" style="color: #28a745;"></i></div>
+                                <a href="{{ url_for('sitting_plan') }}" class="small-box-footer">Click <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript maalum kwa marks entry (keyboard, validation) -->
+<script>
+    // ...
+</script>
+{% endblock %}

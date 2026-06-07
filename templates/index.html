@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}Angalia Matokeo | KIBINDU{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="slide0 show">
+        <img src="{{ url_for('static', filename='img/slide1.png') }}" alt="slide1" style="width: 39%; height: auto;" onload="this.style.opacity=1">
+    </div>
+    <h1 class="text-center">
+        <span id="typed-text"></span>
+        <span class="cursor-blink"></span>
+    </h1>
+    <p class="text-center" style="color: #084816; margin-bottom: 2rem;">
+        Kupata matokeo, weka namba yako ya simu iliyohifadhiwa shuleni au 
+        namba ya mtihani ya mwanafunzi uliyotumiwa kutoka shuleni kwa SMS. Kama huna vigezo hivyo,
+        <a href="{{ url_for('mbadala') }}"> Ingia hapa</a> 
+    </p>
+
+    {% if error %}
+    <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 8px; margin-bottom: 1rem;">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('check_results') }}" id="resultForm">
+        <div class="form-group">
+            <label for="phone">
+                <i class="fas fa-phone-alt" style="margin-right: 8px;"></i>Namba ya Simu
+            </label>
+            <input type="tel" id="phone" name="phone" placeholder="Mfano: 06xxxxxxx" autocomplete="off" value="{{ request.form.phone or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="pin">
+                <i class="fas fa-lock" style="margin-right: 8px;"></i>Namba ya mtihani
+            </label>
+            <input type="text" id="pin" name="pin" placeholder="Mfano: 100" autocomplete="off" value="{{ request.form.pin or '' }}">
+        </div>
+        
+        <button type="submit" class="btn">
+            <i class="fas fa-search" style="margin-right: 8px;"></i>Angalia Matokeo
+        </button>
+    </form>
+    
+    <div class="note">
+        <p style="margin-top: 1rem;">
+            <i class="fas fa-info-circle"></i> 
+            Matokeo yanapatikana kwa wanafunzi waliosajiliwa.
+        </p> 
+        <p>__________________</p>   
+        <p><a href="{{ url_for('login') }}">Inside Kibindu</a></p>    
+        
+    </div>
+</div>
+
+<!-- Slide Container (nje ya card) -->
+<div id="slideContainer">
+    <button id="prev" class="sliderBtn">&lt;</button>
+    <button id="next" class="sliderBtn">&gt;</button>
+    </div>
+    <div class="slide show">
+            <iframe 
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d393484.98253332544!2d37.35248565673828!3d-6.00630094528231!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1845277640875113%3A0x99257d6ac02a0fb0!2sKibindu%20Secondary%20School!5e1!3m2!1sen!2stz!4v1777709039501!5m2!1sen!2stz" 
+        width="100%" 
+        height="400" 
+        style="border:0;" 
+        allowfullscreen="" 
+        loading="lazy">
+    </iframe>
+    <p>School location</p>
+    </div>    
+    <div class="slide">
+        <img src="{{ url_for('static', filename='img/slide1.png') }}" alt="slide1" onload="this.style.opacity=1">
+        <p>Get join instruction</p>
+    </div>
+ 
+</div>
+
+<style>
+/* Slide Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#slideContainer {
+  width: 500px;
+  margin: 2rem auto;
+  position: relative;
+}
+
+.sliderBtn {
+  position: absolute;
+  background-color: rgba(48, 5, 50, 0.5);
+  border: none;
+  color: white;
+  padding: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 999;
+  font-family: Nunito;
+  font-weight: 600;
+  font-size: 1.5rem;
+  cursor: pointer;
+  outline: none;
+  border-radius: 4px;
+}
+
+.sliderBtn:hover {
+  background-color: rgba(48, 5, 50, 1);
+}
+
+#prev {
+  left: 10px;
+}
+
+#next {
+  right: 10px;
+}
+
+.slide {
+  display: none;
+}
+
+.show {
+  display: block;
+  animation: fadein 1s ease-in-out 0s 1 normal forwards;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide p {
+  padding: 1rem 0;
+  background-color: white;
+  color: black;
+  text-align: center;
+  font-family: Nunito;
+  font-weight: 600;
+  border-radius: 0 0 0.4rem 0.4rem;
+}
+
+img {
+  max-width: 100%;
+  border-radius: 0.4rem 0.4rem 0 0;
+  display: block;
+  margin: auto;
+}
+
+@media screen and (max-width: 722px) {
+  #slideContainer {
+    width: 100%;
+    padding: 0 1px;
+  }
+  .sliderBtn {
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+  .slide p {
+    padding: 0.5rem 0;
+  }
+}
+
+/* Background ya picha */
+body {
+    position: relative;
+    background-image: url("{{ url_for('static', filename='background.png') }}");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    pointer-events: none; /* ili usizuie kushughulikia vitu vya mbele */
+    z-index: -1; /* ikiwa unataka iwe nyuma ya maandishi */
+}
+
+/* Muundo wa card */
+.card {
+    background-color: rgba(186, 205, 228, 0.72);
+    border-radius: 16px;
+    border-top: 4px solid #0c4808;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.49);
+    padding: 2rem 2rem;
+    margin: 3rem auto;
+    max-width: 500px;
+    width: 90%;
+}
+
+.card h1 {
+    color: #0d100f;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #1e4a3d;
+    box-shadow: 0 0 0 3px rgba(30, 74, 61, 0.1);
+}
+
+.btn {
+    background-color: #1e4a3d;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn:hover {
+    background-color: #123d2f;
+}
+
+.note {
+    margin-top: 2rem;
+    text-align: center;
+    color: #29484a;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 1.5rem;
+}
+
+.note a {
+    color: #e23307;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.note a:hover {
+    text-decoration: underline;
+    color: #723303;
+}
+
+@media (max-width: 600px) {
+    .card {
+        padding: 1rem 1rem;
+        margin: 1.5rem auto;
+    }
+    
+    .card h1 {
+        font-size: 1.5rem;
+    }
+}
+/* Typing effect cursor */
+.cursor-blink {
+    display: inline-block;
+    width: 3px;
+    background-color: #1e4a3d;
+    margin-left: 2px;
+    animation: blink 0.8s step-end infinite;
+    font-weight: normal;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Hakikisha span ya typing ina nafasi */
+#typed-text {
+    display: inline-block;
+    font-weight: 700;
+    color: #0d100f;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ----- Mutual exclusion for phone and pin -----
+    const phoneInput = document.getElementById('phone');
+    const pinInput = document.getElementById('pin');
+    
+    function clearOther(field, otherField) {
+        field.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                otherField.value = '';
+            }
+        });
+    }
+    
+    if (phoneInput && pinInput) {
+        clearOther(phoneInput, pinInput);
+        clearOther(pinInput, phoneInput);
+    }
+    
+    // ----- Slide show (kama ilivyokuwa) -----
+    let nextBtn = document.getElementById("next");
+    let prevBtn = document.getElementById("prev");
+    let slides = document.querySelectorAll(".slide");
+    let changeSlide = 0;
+    
+    if (nextBtn && prevBtn) {
+        nextBtn.addEventListener("click", function() {
+            slides.forEach(function (slide, index) {
+                if (slide.classList.contains("show")) {
+                    changeSlide = index + 1;
+                    slide.classList.remove("show");
+                }
+            });
+            if (changeSlide < slides.length) {
+                slides[changeSlide].classList.add("show");
+            } else {
+                changeSlide = 0;
+                slides[changeSlide].classList.add("show");
+            }
+        });
+        
+        prevBtn.addEventListener('click', function () {
+            slides.forEach(function (slide, index) {
+                if (slide.classList.contains("show")) {
+                    changeSlide = index - 1;
+                    slide.classList.remove("show");
+                }
+            });
+            if (changeSlide >= 0 && changeSlide < slides.length) {
+                slides[changeSlide].classList.add("show");
+            } else {
+                changeSlide = slides.length - 1;
+                slides[changeSlide].classList.add("show");
+            }
+        });
+    }
+});
+
+
+// Typing effect: mbele, kinyume, kurudia
+(function() {
+    const text = "Angalia Matokeo";
+    const typedSpan = document.getElementById("typed-text");
+    if (!typedSpan) return;
+    
+    let i = 0;
+    let direction = 1; // 1 = kuandika mbele, -1 = kufuta
+    let isDeleting = false;
+    let timeout;
+    
+    function typeAndDelete() {
+        // Hakikisha tunaandika maandishi kamili kwa sasa
+        if (!isDeleting && i < text.length) {
+            // Kuandika mbele
+            typedSpan.textContent = text.substring(0, i + 1);
+            i++;
+            timeout = setTimeout(typeAndDelete, 120); // kasi ya kuandika
+        }
+        else if (!isDeleting && i === text.length) {
+            // Imefika mwisho, subiri sekunde 1.5 kisha anza kufuta
+            isDeleting = true;
+            timeout = setTimeout(typeAndDelete, 1500);
+        }
+        else if (isDeleting && i > 0) {
+            // Kufuta nyuma
+            typedSpan.textContent = text.substring(0, i - 1);
+            i--;
+            timeout = setTimeout(typeAndDelete, 60); // kufuta kwa kasi kidogo
+        }
+        else if (isDeleting && i === 0) {
+            // Imefutika kabisa, subiri sekunde 0.5 kisha anza tena
+            isDeleting = false;
+            timeout = setTimeout(typeAndDelete, 500);
+        }
+    }
+    
+    // Anza typing baada ya kurasa kuwa tayari
+    window.addEventListener("DOMContentLoaded", typeAndDelete);
+})();
+</script>
+{% endblock %}

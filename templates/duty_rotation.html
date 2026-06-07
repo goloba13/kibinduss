@@ -1,0 +1,342 @@
+{% extends "base2.html" %}
+{% block title %}Zamu za Walimu{% endblock %}
+{% block extra_css %}
+<style>
+    /* ========== STYLES ZA DUTY ROTATION ========== */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+    h2 {
+        color: #1e4a3d;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        border-left: 5px solid #1e4a3d;
+        padding-left: 1rem;
+    }
+    .btn-group {
+        margin-bottom: 1.5rem;
+    }
+    .btn-outline-primary {
+        border-color: #1e4a3d;
+        color: #1e4a3d;
+    }
+    .btn-outline-primary:hover,
+    .btn-outline-primary.active {
+        background-color: #1e4a3d;
+        border-color: #1e4a3d;
+        color: white;
+    }
+    .btn-outline-success {
+        border-color: #28a745;
+        color: #28a745;
+    }
+    .btn-outline-success:hover,
+    .btn-outline-success.active {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+    }
+    .card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    .card-header {
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    .card-header.bg-primary {
+        background: linear-gradient(135deg, #1e4a3d, #0f2c23) !important;
+        color: white;
+    }
+    .card-header.bg-success {
+        background: linear-gradient(135deg, #28a745, #1e4a3d) !important;
+        color: white;
+    }
+    .card-header.bg-info {
+        background: linear-gradient(135deg, #17a2b8, #0f6b7a) !important;
+        color: white;
+    }
+    .card-body {
+        padding: 1.5rem;
+    }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.5rem;
+    }
+    .table th,
+    .table td {
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+        vertical-align: middle;
+    }
+    .table th {
+        background-color: #f8fafc;
+        font-weight: 700;
+        color: #1e4a3d;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .table tbody tr:hover {
+        background-color: #f9fbfd;
+    }
+    .alert {
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+    }
+    .btn-sm {
+        padding: 0.25rem 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 30px;
+    }
+    .btn-info {
+        background-color: #17a2b8;
+        border: none;
+        color: white;
+    }
+    .btn-info:hover {
+        background-color: #138496;
+    }
+    .btn-warning {
+        background-color: #ffc107;
+        border: none;
+        color: #212529;
+    }
+    .btn-warning:hover {
+        background-color: #e0a800;
+    }
+    @media (max-width: 768px) {
+        .table th, .table td {
+            padding: 0.5rem;
+            font-size: 0.8rem;
+        }
+        .btn-sm {
+            font-size: 0.7rem;
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Zamu za Walimu</h2>
+    <div class="btn-group mb-4" role="group">
+        <button type="button" class="btn btn-outline-primary active" id="btnAll">📋 All</button>
+        <button type="button" class="btn btn-outline-success" id="btnTod">👑 T.O.D</button>
+    </div>
+
+    <!-- View: All Teachers -->
+    <div id="viewAll" style="display: block;">
+        <div class="card">
+         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <span>Duties</span>
+            <button id="downloadRosterBtn" class="btn btn-sm btn-light">📄 Download Roster (PDF)</button>
+         </div>
+            <div class="card-body">
+                <div id="allLoading" class="text-center">Inapakia...</div>
+                <table class="table table-bordered" id="allTable" style="display: none;">
+                    <thead><tr><th>Teacher's name</th><th>Starting</th><th>Ending</th></tr></thead>
+                    <tbody id="allTeachersTable"></tbody>
+                </table>
+                <div id="allError" class="alert alert-danger" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View: Teacher on Duty -->
+    <div id="viewTod" style="display: none;">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">Mwalimu wa Zamu Wiki Hii</div>
+            <div class="card-body" id="todInfo">
+                <div class="text-center">Inapakia...</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header bg-info text-white">Siku za Zamu na Ripoti</div>
+            <div class="card-body">
+                <div id="weekLoading" class="text-center">Inapakia...</div>
+                <table class="table table-bordered" id="weekTable" style="display: none;">
+                    <thead><tr><th>Siku</th><th>Tarehe</th><th>Ripoti</th><th>Kitendo</th></tr></thead>
+                    <tbody id="todDaysTable"></tbody>
+                </table>
+                <div id="weekError" class="alert alert-danger" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Function to format ISO date (YYYY-MM-DD) to "DD MMM YYYY"
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        const day = String(date.getDate()).padStart(2, '0');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = monthNames[date.getMonth()];
+        const year = date.getFullYear();
+        return `${day} ${month} ${year}`;
+    }
+
+    async function loadAllTeachers() {
+        const loadingDiv = document.getElementById('allLoading');
+        const table = document.getElementById('allTable');
+        const errorDiv = document.getElementById('allError');
+        loadingDiv.style.display = 'block';
+        table.style.display = 'none';
+        errorDiv.style.display = 'none';
+        try {
+            const res = await fetch('/api/duty/all');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            console.log('All teachers:', data);
+            const tbody = document.getElementById('allTeachersTable');
+            tbody.innerHTML = '';
+            if (data.error) throw new Error(data.error);
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3">Hakuna walimu wanaofanya kazi.</td></tr>';
+            } else {
+                data.forEach(t => {
+                    const startFormatted = formatDate(t.duty_start);
+                    const endFormatted = formatDate(t.duty_end);
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${t.teacher_name}</td>
+                            <td>${startFormatted}</td>
+                            <td>${endFormatted}</td>
+                        </tr>
+                    `;
+                });
+            }
+            loadingDiv.style.display = 'none';
+            table.style.display = 'table';
+        } catch (err) {
+            console.error(err);
+            loadingDiv.style.display = 'none';
+            errorDiv.innerText = 'Hitilafu: ' + err.message;
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    async function loadTodInfo() {
+        const infoDiv = document.getElementById('todInfo');
+        infoDiv.innerHTML = '<div class="text-center">Inapakia...</div>';
+        try {
+            const res = await fetch('/api/duty/current');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            console.log('Current duty:', data);
+            if (data.error) throw new Error(data.error);
+            const startFormatted = formatDate(data.week_start);
+            const endFormatted = formatDate(data.week_end);
+            infoDiv.innerHTML = `
+                <p><strong>${data.teacher.name}</strong></p>
+                <p>Zamu: ${startFormatted} hadi ${endFormatted}</p>
+            `;
+            return data;
+        } catch (err) {
+            console.error(err);
+            infoDiv.innerHTML = `<div class="alert alert-danger">Hitilafu: ${err.message}</div>`;
+            throw err;
+        }
+    }
+
+    async function loadTodWeek() {
+        const loadingDiv = document.getElementById('weekLoading');
+        const table = document.getElementById('weekTable');
+        const errorDiv = document.getElementById('weekError');
+        loadingDiv.style.display = 'block';
+        table.style.display = 'none';
+        errorDiv.style.display = 'none';
+        try {
+            const res = await fetch('/api/duty/current/week');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            console.log('Week data:', data);
+            if (data.error) throw new Error(data.error);
+            const tbody = document.getElementById('todDaysTable');
+            tbody.innerHTML = '';
+            if (!data.days || data.days.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">Hakuna siku za wiki hii.</td></tr>';
+            } else {
+                data.days.forEach(day => {
+                    const formattedDate = formatDate(day.date);
+                    const status = day.has_report ? '✅ Saved' : '❌ Not saved';
+                    const action = day.has_report ?
+                                `<a href="/view-report?date=${day.date}" class="btn btn-sm btn-info">Angalia</a>` :
+                                `<a href="/week-details" class="btn btn-sm btn-warning">Jaza</a>`;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${day.day_name}</td>
+                            <td>${formattedDate}</td>
+                            <td>${status}</td>
+                            <td>${action}</td>
+                        </tr>
+                    `;
+                });
+            }
+            loadingDiv.style.display = 'none';
+            table.style.display = 'table';
+        } catch (err) {
+            console.error(err);
+            loadingDiv.style.display = 'none';
+            errorDiv.innerText = 'Hitilafu: ' + err.message;
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    // Toggle views
+    const btnAll = document.getElementById('btnAll');
+    const btnTod = document.getElementById('btnTod');
+    const viewAll = document.getElementById('viewAll');
+    const viewTod = document.getElementById('viewTod');
+
+    btnAll.addEventListener('click', () => {
+        btnAll.classList.add('active');
+        btnTod.classList.remove('active');
+        viewAll.style.display = 'block';
+        viewTod.style.display = 'none';
+        loadAllTeachers();
+    });
+
+    btnTod.addEventListener('click', async () => {
+        btnTod.classList.add('active');
+        btnAll.classList.remove('active');
+        viewAll.style.display = 'none';
+        viewTod.style.display = 'block';
+        await loadTodInfo();
+        await loadTodWeek();
+    });
+
+    // Load default (All)
+    loadAllTeachers();
+
+// Download roster as PDF
+const downloadBtn = document.getElementById('downloadRosterBtn');
+if (downloadBtn) {
+    downloadBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/download-duty-roster');
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `duty_roster_${new Date().getFullYear()}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } else {
+                alert('Hitilafu wakati wa kuunda PDF.');
+            }
+        } catch (err) {
+            alert('Kosa la mtandao: ' + err.message);
+        }
+    });
+}
+</script>
+{% endblock %}

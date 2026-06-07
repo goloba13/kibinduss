@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}Angalia Matokeo | KIBINDU{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1 class="text-center">Angalia Matokeo</h1>
+    <p class="text-center" style="color: #084816; margin-bottom: 2rem;">
+        Kupata matokeo, weka namba yako ya simu iliyohifadhiwa shuleni au 
+        namba ya mtihani ya mwanafunzi uliyotumiwa kutoka shuleni kwa SMS. Kama huna vigezo hivyo,
+        
+        <a href="{{ url_for('mbadala') }}"> Ingia hapa</a> 
+    </p>
+    
+    <form method="post" action="{{ url_for('check_results') }}">
+        <div class="form-group">
+            <label for="phone">
+                <i class="fas fa-phone-alt" style="margin-right: 8px;"></i>Namba ya Simu
+            </label>
+            <input type="tel" id="phone" name="phone" placeholder="Mfano: 06xxxxxxx">
+        </div>
+        
+        <div class="form-group">
+            <label for="pin">
+                <i class="fas fa-lock" style="margin-right: 8px;"></i>Namba ya mtihani
+            </label>
+            <input type="text" id="pin" name="pin" placeholder="Ingiza PIN yako">
+        </div>
+        
+        <button type="submit" class="btn">
+            <i class="fas fa-search" style="margin-right: 8px;"></i>Angalia Matokeo
+        </button>
+    </form>
+    
+    <div class="note">
+        <p>                       <a href="{{ url_for('login') }}">  Inside Kibindu</a></p>
+        <p style="margin-top: 1rem;">
+            <i class="fas fa-info-circle"></i> 
+            Matokeo yanapatikana kwa wanafunzi waliosajiliwa
+        </p>
+    </div>
+</div>
+
+<!-- Slide Container - nje ya card -->
+<div id="slideContainer">
+    <button id="prev" class="sliderBtn">&lt;</button>
+    <button id="next" class="sliderBtn">&gt;</button>
+    
+    <div class="slide show">
+        <img src="{{ url_for('static', filename='img/slide1.jpg') }}" alt="slide1" onload="this.style.opacity=1">
+        <p>Unifomu ya darasani</p>
+    </div>
+    <div class="slide">
+        <img src="{{ url_for('static', filename='img/slide2.jpg') }}" alt="slide2" />
+        <p>Unifomu ya kushindia/nje no.1</p>
+    </div>
+    <div class="slide">
+        <img src="{{ url_for('static', filename='img/slide3.jpg') }}" alt="slide3" />
+        <p>Unifomu ya michezo</p>
+    </div>
+    <div class="slide">
+        <img src="{{ url_for('static', filename='img/slide4.jpg') }}" alt="slide4" />
+        <p>Sweta wakati wa baridi</p>
+    </div>
+    <div class="slide">
+        <img src="{{ url_for('static', filename='img/slide5.jpg') }}" alt="slide5" />
+        <p>Unifomu ya kushindia/nje no.2</p>
+    </div>
+    <div class="slide">
+        <img src="{{ url_for('static', filename='img/slide6.jpg') }}" alt="slide6" />
+        <p>Shuka kwa wale wa hosteli</p>
+    </div>
+    <div class="slide">
+        <img src="{{ url_for('static', filename='img/slide7.jpg') }}" alt="slide7" />
+        <p>Unifomu ya darasani no 2</p>
+    </div>
+    <div class="slide">
+        <img src="{{ url_for('static', filename='img/slide8.png') }}" alt="slide8" />
+        <p>Uniform ya darasani no. 3</p>
+    </div>
+</div>
+
+<style>
+/* Slide Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#slideContainer {
+  width: 500px;
+  margin: 2rem auto;
+  position: relative;
+}
+
+.sliderBtn {
+  position: absolute;
+  background-color: rgba(48, 5, 50, 0.5);
+  border: none;
+  color: white;
+  padding: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 999;
+  font-family: Nunito;
+  font-weight: 600;
+  font-size: 1.5rem;
+  cursor: pointer;
+  outline: none;
+  border-radius: 4px;
+}
+
+.sliderBtn:hover {
+  background-color: rgba(48, 5, 50, 1);
+}
+
+#prev {
+  left: 10px;
+}
+
+#next {
+  right: 10px;
+}
+
+.slide {
+  display: none;
+}
+
+.show {
+  display: block;
+  animation: fadein 1s ease-in-out 0s 1 normal forwards;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide p {
+  padding: 1rem 0;
+  background-color: white;
+  color: black;
+  text-align: center;
+  font-family: Nunito;
+  font-weight: 600;
+  border-radius: 0 0 0.4rem 0.4rem;
+}
+
+img {
+  max-width: 100%;
+  border-radius: 0.4rem 0.4rem 0 0;
+  display: block;
+  margin: auto;
+}
+
+@media screen and (max-width: 722px) {
+  #slideContainer {
+    width: 100%;
+    padding: 0 1px;
+  }
+  .sliderBtn {
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+  .slide p {
+    padding: 0.5rem 0;
+  }
+}
+
+/* Background ya picha */
+body {
+    position: relative;
+    background-image: url("{{ url_for('static', filename='background.png') }}");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    pointer-events: none; /* ili usizuie kushughulikia vitu vya mbele */
+    z-index: -1; /* ikiwa unataka iwe nyuma ya maandishi */
+}
+
+/* Muundo wa card */
+.card {
+    background-color: rgba(186, 205, 228, 0.72);
+    border-radius: 16px;
+    border-top: 4px solid #6b7103;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    padding: 2rem 2rem;
+    margin: 3rem auto;
+    max-width: 500px;
+    width: 90%;
+}
+
+.card h1 {
+    color: #0d100f;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #1e4a3d;
+    box-shadow: 0 0 0 3px rgba(30, 74, 61, 0.1);
+}
+
+.btn {
+    background-color: #1e4a3d;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn:hover {
+    background-color: #123d2f;
+}
+
+.note {
+    margin-top: 2rem;
+    text-align: center;
+    color: #29484a;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 1.5rem;
+}
+
+.note a {
+    color: #e23307;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.note a:hover {
+    text-decoration: underline;
+    color: #723303;
+}
+
+@media (max-width: 600px) {
+    .card {
+        padding: 1rem 1rem;
+        margin: 1.5rem auto;
+    }
+    
+    .card h1 {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let nextBtn = document.getElementById("next");
+    let prevBtn = document.getElementById("prev");
+    let slides = document.querySelectorAll(".slide");
+    let changeSlide = 0;
+    
+    nextBtn.addEventListener("click", function() {
+        slides.forEach(function (slide, index) {
+            if (slide.classList.contains("show")) {
+                changeSlide = index + 1;
+                slide.classList.remove("show");
+            }
+        });
+        
+        if (changeSlide < slides.length) {
+            slides[changeSlide].classList.add("show");
+        } else {
+            changeSlide = 0;
+            slides[changeSlide].classList.add("show");
+        }
+    });
+    
+    prevBtn.addEventListener('click', function () {
+        slides.forEach(function (slide, index) {
+            if (slide.classList.contains("show")) {
+                changeSlide = index - 1;
+                slide.classList.remove("show");
+            }
+        });
+        
+        if (changeSlide >= 0 && changeSlide < slides.length) {
+            slides[changeSlide].classList.add("show");
+        } else {
+            changeSlide = slides.length - 1;
+            slides[changeSlide].classList.add("show");
+        }
+    });
+});
+</script>
+{% endblock %}

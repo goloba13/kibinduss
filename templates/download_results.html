@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pakua Matokeo | Darasa Zima au Wanafunzi Binafsi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        .card { max-width: 1200px; margin: 30px auto; border-radius: 24px; }
+        .btn-pdf { background: #dc3545; color: white; border: none; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; }
+        .btn-pdf:hover { background: #b52b3a; }
+        .table-responsive { overflow-x: auto; }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .loading-content {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+<div class="card shadow-sm p-4">
+    <h2 class="mb-4 text-center">📥 Pakua Matokeo ya Mtihani</h2>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-5">
+            <label class="form-label">Aina ya Mtihani</label>
+            <select id="examTypeSelect" class="form-select">
+                <option value="">-- Chagua --</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Kidato</label>
+            <select id="classSelect" class="form-select">
+                <option value="">-- Chagua --</option>
+                {% for c in classes %}
+                <option value="{{ c }}">{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+            <button id="loadStudentsBtn" class="btn btn-primary flex-grow-1">📋 Load Students</button>
+            <button id="exportExcelBtn" class="btn btn-success flex-grow-1" disabled>📊 Excel</button>
+            <button id="exportAllPdfBtn" class="btn btn-danger flex-grow-1" disabled>📦 PDF Zote</button>
+        </div>
+    </div>
+
+    <!-- Spinner kubwa (inayoonyeshwa wakati wa kuunda ZIP) -->
+    <div id="globalLoading" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 9999;">
+        <div class="bg-white p-4 rounded-4 text-center shadow">
+            <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;"></div>
+            <p class="mt-3 mb-0">Inaunda PDF na ZIP. Tafadhali subiri...</p>
+        </div>
+    </div>
+
+    <div id="studentsTableContainer" style="display: none;">
+        <h4 class="mt-3">📌 Orodha ya Wanafunzi</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="table-success">
+                    <tr><th>#</th><th>Jina la Mwanafunzi</th><th>Jinsia</th><th>Kitendo</th></tr>
+                </thead>
+                <tbody id="studentsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentExamId = null;
+    let currentClass = null;
+    let currentStudentsData = [];
+
+    const examSelect = document.getElementById('examTypeSelect');
+    const classSelect = document.getElementById('classSelect');
+    const loadBtn = document.getElementById('loadStudentsBtn');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    const exportAllPdfBtn = document.getElementById('exportAllPdfBtn');
+    const tableContainer = document.getElementById('studentsTableContainer');
+    const tableBody = document.getElementById('studentsTableBody');
+    const globalLoading = document.getElementById('globalLoading');
+
+    // 1. Pakia mitihani
+    async function loadExamTypes() {
+        try {
+            const res = await fetch('/api/exam-types');
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            examSelect.innerHTML = '<option value="">-- Chagua --</option>';
+            data.forEach(exam => {
+                const opt = document.createElement('option');
+                opt.value = exam.id;
+                opt.textContent = exam.exam_name;
+                examSelect.appendChild(opt);
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Imeshindwa kupakia mitihani: ' + err.message);
+        }
+    }
+
+    // 2. Load students
+    async function loadStudents() {
+        const examId = examSelect.value;
+        const className = classSelect.value;
+        if (!examId || !className) {
+            alert('Tafadhali chagua aina ya mtihani na kidato.');
+            return;
+        }
+        currentExamId = examId;
+        currentClass = className;
+        // Onyesha spinner ndogo au disable buttons kwa muda (si lazima)
+        exportExcelBtn.disabled = true;
+        exportAllPdfBtn.disabled = true;
+        tableContainer.style.display = 'none';
+
+        try {
+            const response = await fetch('/class-full-results', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exam_type_id: examId, class: className })
+            });
+            if (!response.ok) throw new Error('Server error: ' + response.status);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            currentStudentsData = data.students || [];
+            if (currentStudentsData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Hakuna wanafunzi katika darasa hili.穷穷';
+                exportExcelBtn.disabled = true;
+                exportAllPdfBtn.disabled = true;
+            } else {
+                renderStudentsTable();
+                exportExcelBtn.disabled = false;
+                exportAllPdfBtn.disabled = false;
+            }
+            tableContainer.style.display = 'block';
+        } catch (err) {
+            alert('Kosa: ' + err.message);
+        }
+    }
+
+    function renderStudentsTable() {
+        tableBody.innerHTML = '';
+        currentStudentsData.forEach((student, idx) => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).innerText = idx + 1;
+            row.insertCell(1).innerText = student.student_name;
+            row.insertCell(2).innerText = student.sex || '-';
+            const btnCell = row.insertCell(3);
+            const pdfBtn = document.createElement('button');
+            pdfBtn.innerText = '📄 Pakua PDF';
+            pdfBtn.className = 'btn-pdf';
+            pdfBtn.onclick = () => downloadStudentPDF(student.student_id);
+            btnCell.appendChild(pdfBtn);
+        });
+    }
+
+    // 3. Pakua PDF ya mwanafunzi mmoja
+    async function downloadStudentPDF(studentId) {
+        if (!currentExamId || !currentClass) {
+            alert('Tafadhali load wanafunzi kwanza.');
+            return;
+        }
+        try {
+            const response = await fetch('/student-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    exam_type_id: currentExamId,
+                    class: currentClass
+                })
+            });
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || 'Kosa la server');
+            }
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Ripoti_${studentId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            alert('Hitilafu wakati wa kuchapisha PDF: ' + err.message);
+        }
+    }
+
+    // 4. Pakua Excel (darasa zima)
+    async function downloadExcel() {
+        if (!currentExamId || !currentClass) {
+            alert('Tafadhali load wanafunzi kwanza.');
+            return;
+        }
+        try {
+            const response = await fetch('/export-class-full-results', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exam_type_id: currentExamId, class: currentClass })
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Kosa la server');
+            }
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Matokeo_${currentClass}.xlsx`;
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            alert('Hitilafu wakati wa kuexport Excel: ' + err.message);
+        }
+    }
+
+    // 5. Pakua PDF zote kwa ZIP (iliyo na loading spinner)
+    async function downloadAllPdfsZip() {
+        if (!currentExamId || !currentClass) {
+            alert('Tafadhali load wanafunzi kwanza.');
+            return;
+        }
+        const btn = exportAllPdfBtn;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Inaunda ZIP...';
+        globalLoading.style.display = 'flex';
+
+        try {
+            const response = await fetch('/download-all-pdfs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    exam_type_id: currentExamId,
+                    class: currentClass
+                })
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Kosa la server');
+            }
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Matokeo_${currentClass}_Exam_${currentExamId}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            alert('✅ Faili la ZIP limepakuliwa kikamilifu!');
+        } catch (err) {
+            console.error(err);
+            alert('Hitilafu wakati wa kupakua ZIP: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            globalLoading.style.display = 'none';
+        }
+    }
+
+    // Bind events
+    loadBtn.addEventListener('click', loadStudents);
+    exportExcelBtn.addEventListener('click', downloadExcel);
+    exportAllPdfBtn.addEventListener('click', downloadAllPdfsZip);
+    loadExamTypes();
+</script>
+</body>
+</html>

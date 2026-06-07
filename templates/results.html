@@ -1,0 +1,252 @@
+{% extends "base2.html" %}
+{% block title %}Matokeo ya Wanafunzi | KBSS{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Mitindo ya jedwali */
+    .results-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+    .filter-form {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.534);
+        margin-bottom: 2rem;
+    }
+    .filter-form .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+    .filter-form .col {
+        flex: 1;
+        min-width: 150px;
+    }
+    .filter-form label {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+        color: #1e4a3d;
+    }
+    .filter-form select, .filter-form input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
+    .btn-primary {
+        background: #1e4a3d;
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 30px;
+        cursor: pointer;
+    }
+    .btn-primary:hover {
+        background: #0f2c23;
+    }
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    .results-table th, .results-table td {
+        padding: 0.8rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .results-table th {
+        background: #1e4a3d;
+        color: white;
+        font-weight: 600;
+    }
+    .results-table tr:hover {
+        background: #f8fafc;
+    }
+    .copy-btn {
+        background: #2c6e5c;
+        color: white;
+        border: none;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+    .copy-btn:hover {
+        background: #1e4a3d;
+    }
+    .error {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 0.8rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+    @media (max-width: 768px) {
+        .results-table th, .results-table td {
+            padding: 0.5rem;
+            font-size: 0.75rem;
+        }
+        .copy-btn {
+            font-size: 0.7rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="results-container">
+    <h2>Matokeo</h2>
+
+    <form method="post" class="filter-form">
+        <div class="row">
+            <div class="col">
+                <label>Kidato</label>
+                <select name="form" required>
+                    <option value="">-- Chagua kidato --</option>    
+                    {% for f in forms %}
+                    <option value="{{ f }}" {% if f == selected_class %}selected{% endif %}>{{ f }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <label>Exam type</label>
+                <select name="exam_type_id" required>
+                    <option value="">-- Chagua examType --</option>
+                    {% for e in exam_types %}
+                    <option value="{{ e.id }}" {% if e.id == selected_exam_type %}selected{% endif %}>{{ e.exam_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <label>Mwaka</label>
+                <select name="year" required>
+                    <option value="">-- Chagua mwaka --</option>    
+                    {% for y in years %}
+                    <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <label>Muhula</label>
+                <select name="term" required>
+                    <option value="">-- Chagua muhula --</option>
+                    {% for t in terms %}
+                    <option value="{{ t }}" {% if t == selected_term %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <button type="submit" class="btn-primary">View results</button>
+            </div>
+        </div>
+    </form>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    {% if students %}
+    <div style="overflow-x: auto;">
+        <table class="results-table">
+<thead>
+    <tr>
+        <th>Student ID</th>
+        <th>Student name</th>
+        <th>Subjects</th>
+        <th>Points</th>
+        <th>Division</th>
+        <th>Ranking</th>
+        <th>Action</th>
+    </tr>
+</thead>
+<tbody>
+    {% for student in students %}
+    <tr>
+        <td>{{ student.out_student_id }}</td>
+        <td>{{ student.out_student_name }}</td>
+        <td>{{ student.out_subjects_grades }}</td>
+        <td>{{ student.out_total_points }}</td>
+        <td>{{ student.out_division }}</td>
+        <td>{{ student.out_ranking }} / {{ student.out_total_students }}</td>
+        <td><button class="copy-btn" data-name="{{ student.out_student_name }}" data-ranking="{{ student.out_ranking }}" data-total="{{ student.out_total_students }}" data-division="{{ student.out_division }}" data-points="{{ student.out_total_points }}" data-subjects="{{ student.out_subjects_grades }}" data-id="{{student.out_student_id}}">Copy</button></td>
+    </tr>
+    {% endfor %}
+</tbody>
+        </table>
+    </div>
+    {% else %}
+        {% if request.method == 'POST' %}
+        <p>Hakuna matokeo kwa vigezo ulivyochagua.</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyToClipboard(text) {
+        // Jaribu Clipboard API kwanza
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Ujumbe umechukuliwa!');
+            }).catch(function(err) {
+                console.error('Clipboard API failed:', err);
+                fallbackCopy(text);
+            });
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.top = '-9999px';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, text.length);
+        try {
+            var success = document.execCommand('copy');
+            if (success) {
+                alert('Ujumbe umechukuliwa!');
+            } else {
+                alert('Hitilafu: Tafadhali nakili kwa mkono.');
+            }
+        } catch (err) {
+            alert('Hitilafu: ' + err);
+        }
+        document.body.removeChild(textarea);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var buttons = document.querySelectorAll('.copy-btn');
+        console.log('Found buttons:', buttons.length);
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener('click', function(e) {
+                e.preventDefault();
+                var btn = this;
+                var id = btn.getAttribute('data-id')
+                var name = btn.getAttribute('data-name');
+                var ranking = btn.getAttribute('data-ranking');
+                var total = btn.getAttribute('data-total');
+                var division = btn.getAttribute('data-division');
+                var points = btn.getAttribute('data-points');
+                var subjects = btn.getAttribute('data-subjects');
+                var status = (division === 'I' || division === 'II' || division === 'III' || division === 'IV') ? 'amefaulu' : 'amefeli';
+                var message = 'Ndugu Mzazi wa ' + name + ', mwanao amekuwa wa ' + ranking + ' kati ya wanafunzi ' + total + ' na ' + status + ' kwa matokeo ya ' + subjects + ' na Div=' + division + ' ya point ' + points + '. Zaidi ingia https://kibindusec.pythonanywhere.com/check_results?pin=' + id;
+                copyToClipboard(message);
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "academic_base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Matumizi ya Supabase (Free Tier)</h2>
+    {% if usage and usage.database and usage.storage %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">Database</div>
+                <div class="card-body">
+                    <p>Matumizi: <strong>{{ usage.database.used_mb|default(0) }} MB</strong> / {{ usage.database.limit_mb|default(500) }} MB</p>
+                    <div class="progress">
+                        {% set db_percent = usage.database.used_percent|default(0) %}
+                        <div class="progress-bar 
+                                    {% if db_percent > 90 %}bg-danger
+                                    {% elif db_percent > 70 %}bg-warning
+                                    {% else %}bg-success{% endif %}" 
+                             style="width: {{ db_percent }}%;">
+                            {{ db_percent }}%
+                        </div>
+                    </div>
+                    <p class="mt-2">
+                        {% if usage.summary and usage.summary.database_within_limit %}
+                            ✅ Ndani ya kikomo
+                        {% else %}
+                            ❌ Imefikia kikomo (safisha data)
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">Storage (Faili)</div>
+                <div class="card-body">
+                    <p>Matumizi: <strong>{{ usage.storage.used_mb|default(0) }} MB</strong> / {{ usage.storage.limit_mb|default(1024) }} MB</p>
+                    <div class="progress">
+                        {% set stor_percent = usage.storage.used_percent|default(0) %}
+                        <div class="progress-bar
+                                    {% if stor_percent > 90 %}bg-danger
+                                    {% elif stor_percent > 70 %}bg-warning
+                                    {% else %}bg-success{% endif %}"
+                             style="width: {{ stor_percent }}%;">
+                            {{ stor_percent }}%
+                        </div>
+                    </div>
+                    <p class="mt-2">
+                        {% if usage.summary and usage.summary.storage_within_limit %}
+                            ✅ Ndani ya kikomo
+                        {% else %}
+                            ❌ Imefikia kikomo
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-info">
+        ⚠️ Vikomo vya Free Tier: Database 500 MB, Storage 1 GB, Bandwidth 5 GB/mwezi.<br>
+        Ukarasa huu unakadiria matumizi ya database na storage pekee. Bandwidth unahitaji kukadiria kwa kujirekodi mwenyewe.
+    </div>
+    {% else %}
+    <div class="alert alert-danger">
+        ✖️ Hitilafu: Hakuna data ya matumizi. Hakikisha function ya Supabase imeundwa vizuri.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

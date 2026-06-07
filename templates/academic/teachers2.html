@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simamia Walimu - Mtaaluma</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn-edit { background-color: #007bff; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-edit:hover { background-color: #0056b3; }
+        .add-section { background-color: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .add-section input, .add-section select, .add-section button { padding: 8px; margin: 5px; }
+        .add-section button { background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .modal {
+            position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.4); display: none;
+        }
+        .modal-content {
+            background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888;
+            width: 80%; max-width: 500px; border-radius: 8px;
+        }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        .flash { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .flash.success { background-color: #d4edda; color: #155724; }
+        .flash.error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h2>Usimamizi wa Walimu</h2>
+    <a href="{{ url_for('mtaaluma') }}">← Rudi Dashboard</a>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Fomu ya kuongeza mwalimu mpya -->
+    <div class="add-section">
+        <h3>Ongeza Mwalimu Mpya</h3>
+        <form method="POST" action="{{ url_for('academic_teachers') }}">
+            <label>Jina kamili la mwalimu:</label>
+            <input type="text" name="full_name" required placeholder="Mfano: Ali Juma">
+            <label>Chagua username kutoka kwa watumiaji waliopo:</label>
+            <select name="username" required>
+                <option value="">-- Chagua username --</option>
+                {% for user in available_users %}
+                    <option value="{{ user['username'] }}">{{ user['username'] }} ({{ user['role'] }})</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Ongeza Mwalimu</button>
+        </form>
+        {% if not available_users %}
+            <p style="color: #856404; background-color: #fff3cd; padding: 8px; border-radius: 4px;">Hakuna watumiaji waliopo wenye role Teacher/Academic ambao hawajawekwa kwenye orodha ya walimu. Unaweza kuwaongeza kupitia ukurasa wa Head (mkuu).</p>
+        {% endif %}
+    </div>
+
+    <!-- Jedwali la walimu waliopo -->
+    <h3>Walimu Waliopo</h3>
+     <table>
+        <thead>
+            <tr>
+                <th>Teacher's name</th>
+                <th>Username</th>
+                <th>Subject</th>
+                <th>Class Teacher</th>
+                <th>Action</th>
+            </thead>
+<tbody>
+    {% for teacher in teachers %}
+    <tr>
+        <td>{{ teacher['teacher_name'] }}</td>
+        <td>{{ teacher['username'] }}</td>
+        <td>
+            <ul>
+            {% for subj in teacher['subjects_list'] %}
+                <li>{{ subj['subject_name'] }} ({{ subj['form'] }})</li>
+            {% endfor %}
+            </ul>
+        </td>
+        <td>{{ teacher['class_teacher'] or '-' }}</td>
+        <td>
+            <button class="btn-edit" data-id="{{ teacher['id'] }}"
+                    data-class_teacher="{{ teacher['class_teacher'] or '' }}"
+                    data-subjects='{{ teacher['subjects_list']|tojson }}'>
+                Hariri
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+    </table>
+
+    <!-- Modal ya kuhariri -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Hariri Taarifa za Mwalimu</h3>
+        <form id="editForm" method="POST" action="{{ url_for('academic_teachers') }}">
+            <input type="hidden" name="teacher_id" id="teacher_id">
+            <input type="hidden" name="teacher_updated_at" id="teacher_updated_at">
+            <label>Mwalimu wa Darasa (Class Teacher):</label>
+            <input type="text" name="class_teacher" id="class_teacher" style="width: 100%;">
+            <br><br>
+            <label>Masomo na Vidato:</label>
+            <div id="subjectsContainer"></div>
+            <button type="button" id="addSubjectBtn" style="margin-top: 8px;">+ Ongeza Somo</button>
+            <br><br>
+            <button type="submit">Hifadhi Mabadiliko</button>
+        </form>
+    </div>
+</div>
+<script>
+    const formOptions = [
+        "Form1",
+        "Form2",
+        "Form3",
+        "Form4",
+        "Form5",
+        "Form6"
+    ];    
+    const modal = document.getElementById('editModal');
+    const closeSpan = document.querySelector('.close');
+    const teacherIdInput = document.getElementById('teacher_id');
+    const classTeacherInput = document.getElementById('class_teacher');
+    const subjectsContainer = document.getElementById('subjectsContainer');
+    const addSubjectBtn = document.getElementById('addSubjectBtn');
+
+    let currentSubjects = [];
+
+function renderSubjectFields() {
+    subjectsContainer.innerHTML = '';
+    currentSubjects.forEach((subj, idx) => {
+        const div = document.createElement('div');
+        div.className = 'subject-item';
+        
+        // Create subject name input
+        const subjectNameInput = document.createElement('input');
+        subjectNameInput.type = 'text';
+        subjectNameInput.name = 'subject_name[]';
+        subjectNameInput.value = subj.subject_name || '';
+        subjectNameInput.placeholder = 'Somo';
+        subjectNameInput.style.width = '45%';
+        
+        // Create form select
+        const formSelect = document.createElement('select');
+        formSelect.name = 'subject_form[]';
+        formSelect.style.width = '35%';
+        formSelect.style.marginRight = '5px';
+        
+        // Add options
+        formOptions.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt;
+            option.textContent = opt;
+            if (subj.form === opt) {
+                option.selected = true;
+            }
+            formSelect.appendChild(option);
+        });
+        
+        // Create remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-subject';
+        removeBtn.textContent = 'Ondoa';
+        removeBtn.setAttribute('data-index', idx);
+        
+        div.appendChild(subjectNameInput);
+        div.appendChild(formSelect);
+        div.appendChild(removeBtn);
+        subjectsContainer.appendChild(div);
+    });
+    
+    // Attach remove event listeners
+    document.querySelectorAll('.remove-subject').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const idx = parseInt(btn.getAttribute('data-index'));
+            currentSubjects.splice(idx, 1);
+            renderSubjectFields();
+        });
+    });
+}
+
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+            teacherIdInput.value = btn.getAttribute('data-id');
+            classTeacherInput.value = btn.getAttribute('data-class_teacher');
+            const subjectsJson = btn.getAttribute('data-subjects');
+            try {
+                currentSubjects = JSON.parse(subjectsJson);
+            } catch(e) {
+                currentSubjects = [];
+            }
+            renderSubjectFields();
+            modal.style.display = 'block';
+        });
+    });
+
+    addSubjectBtn.addEventListener('click', () => {
+        currentSubjects.push({ subject_name: '', form: '' });
+        renderSubjectFields();
+    });
+
+    closeSpan.onclick = () => modal.style.display = 'none';
+    window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; };
+</script>
+</body>
+</html>

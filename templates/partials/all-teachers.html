@@ -1,0 +1,106 @@
+
+
+<!-- Content Header -->
+<div class="content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="m-0">Walimu Wote</h1>
+        <div>
+            <button class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Ongeza Mwalimu</button>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Orodha ya Walimu</h3>
+                    <div class="card-tools float-right">
+                        <div class="input-group input-group-sm" style="width: 200px;">
+                            <input id="search-box"
+                             type="text"
+                             placeholder="Search..."
+                             autocomplete="off"
+                             onkeydown="TopNavBar.googleSearchAttachKeyPressHandler(event)"
+                             aria-label="Search field"
+                             oninput="TopNavBar.searchWithSuggestions(this)"
+                             onfocus="TopNavBar.searchWithSuggestions(this)"
+                             onblur="TopNavBar.searchFieldLostFocus(event)">
+                            <div class="search-btn">
+                                <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Jina la Mwalimu</th>
+                                <th>Jinsia</th>
+                                <th>Namba ya Utambulisho</th>
+                                <th>Simu</th>
+                                <th>Barua pepe</th>
+                                <th>Idara</th>
+                                <th>Vitendo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>John P. Mrema</td>
+                                <td>M</td>
+                                <td>TCH-001</td>
+                                <td>0712 345 678</td>
+                                <td>john.mrema@kibindu.ac.tz</td>
+                                <td>Hisabati</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Anna M. Kisaka</td>
+                                <td>F</td>
+                                <td>TCH-002</td>
+                                <td>0713 456 789</td>
+                                <td>anna.kisaka@kibindu.ac.tz</td>
+                                <td>Kiswahili</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Godlisten P. Shomi</td>
+                                <td>M</td>
+                                <td>TCH-003</td>
+                                <td>0714 567 890</td>
+                                <td>godlisten.shomi@kibindu.ac.tz</td>
+                                <td>Fizikia</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <!-- zaidi -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer clearfix">
+                    <ul class="pagination pagination-sm m-0 float-right">
+                        <li class="page-item"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#">»</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

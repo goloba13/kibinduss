@@ -1,0 +1,51 @@
+<nav class="main-header">
+    <div class="navbar-nav">
+        <a href="#" class="nav-link" id="pushmenuBtn">
+            <i class="fas fa-bars"></i>
+        </a>
+    </div>
+    <div class="navbar-nav ml-auto">
+        <!-- AI Translator Dropdown (Bootstrap native) -->
+        <li class="nav-item dropdown" data-bs-auto-close="outside">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="aiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-brain"></i>
+                <span class="badge bg-primary">AI</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end p-3" style="width: 380px; min-width: 300px;">
+                <li><h6 class="dropdown-header">📖 Kiswahili → English Translator</h6></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <div class="mb-2">
+                        <label for="swahiliInput" class="form-label small">Msaada wa Mwalimu wa zamu:</label>
+                        <textarea id="swahiliInput" class="form-control" rows="4" placeholder="AI:&#10;Andika sentensi ya kiswahili itatafsiriwa."></textarea>
+                    </div>
+                </li>
+                <li>
+                    <button id="translateBtnAI" class="btn btn-sm btn-success w-100 mb-2">🌐 Tafsiri kwa Kiingereza</button>
+                </li>
+                <li>
+                    <div id="translationOutput" class="bg-light p-3 rounded" style="display: none; max-height: 250px; overflow-y: auto; font-size: 1.1rem; cursor: pointer; user-select: text;">
+                        <!-- Matokeo yataonyeshwa hapa -->
+                    </div>
+                </li>
+            </ul>
+        </li>
+
+        <!-- User dropdown (iliyopo) -->
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle fa-lg me-2"></i>
+                <span class="d-none d-md-block">{{ session.get('username', 'Uknown') }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><span class="dropdown-item-text fw-bold">{{ session.get('username', 'Mtumiaji') }}</span></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('writing_latter') }}"><i class="fas fa-user me-2"></i> Inbox</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('change_password') }}"><i class="fas fa-key me-2"></i> Change pas..</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+            </ul>
+        </li>
+    </div>
+</nav>

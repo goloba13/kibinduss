@@ -1,0 +1,174 @@
+{% extends "base2.html" %}
+
+{% block title %}Marks Entry | KIBINDU{% endblock %}
+
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper" style="min-height: 0px;">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+  <div class="col-sm-6">
+    <h1 class="m-0">Get Template: Form IV</h1>
+  </div><!-- /.col -->
+ 
+            </div><!-- /.container-fluid -->
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="container-fluid">
+                                
+<div class="card card-secondary card-outline">
+    <div class="card-header d-sm-flex">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-download mr-2"></i>Select subjects to include in template        </h5>
+        <div class="card-toolbox ml-sm-auto">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="select-all-subjects">
+                <i class="fas fa-check-double mr-1"></i>Select all            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all-subjects">
+                <i class="fas fa-times mr-1"></i>Deselect all            </button>
+        </div>
+    </div>
+    <form method="post" accept-charset="utf-8" role="form" action="/prems/cas/get-template"><div style="display:none;"><input type="hidden" name="_csrfToken" autocomplete="off" value="sO/xogtt7eiRv8EMhOrxfyPIaY23ZbsS2f2xR+r5L2nVpPjC1svTxNtEq63Jswp4ou4aXP+hLaOdPGJEdT8IqGIJQXlfb99wFfkLvNJWiXfpxYYmiMsbCLGWz/Lv/uGnuHTNlfGKPRvG3SM+ncJPwQ=="></div>    <div class="card-body">
+        <p class="text-muted mb-3">
+            <i class="fas fa-info-circle mr-1"></i>
+            Choose one or more subjects below. The downloaded Excel will contain a sheet per selected subject.        </p>
+        <div class="row">
+                            <div class="col-md-6">
+                    <ul class="list-group list-group-flush list-group-subjects">
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="1" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">011 - CIVICS</span>
+                                </label>
+                            </li>
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="2" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">012 - HISTORY</span>
+                                </label>
+                            </li>
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="2" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">060 - HISTORIA YA TANZANIA NA MAADILI</span>
+                                </label>
+                            </li>   
+                                                                <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="2" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">012 - BUSNESS STUDIES</span>
+                                </label>
+                            </li>  
+                                                                <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="2" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">043 - MATHEMATICS</span>
+                                </label>
+                            </li>                                                       
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="3" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">013 - GEOGRAPHY</span>
+                                </label>
+                            </li>
+                            
+                              
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="9" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">021 - KISWAHILI</span>
+                                </label>
+                            </li>
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="10" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">022 - ENGLISH LANGUAGE</span>
+                                </label>
+                            </li>
+                          
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="12" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">024 - LITERATURE IN ENGLISH</span>
+                                </label>
+                            </li>
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="14" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">031 - PHYSICS</span>
+                                </label>
+                            </li>
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="15" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">032 - CHEMISTRY</span>
+                                </label>
+                            </li>
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="16" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">033 - BIOLOGY</span>
+                                </label>
+                            </li>
+ 
+                                                    <li class="list-group-item list-group-item-action d-flex align-items-center py-2">
+                                <label class="mb-0 d-flex align-items-center w-100 cursor-pointer">
+                                    <input type="checkbox" value="20" name="subject_ids[]" class="subject-cb mr-3" style="width: 1.1rem; height: 1.1rem;">
+                                    <span class="text-dark">041 - BASIC MATHEMATICS</span>
+                                </label>
+                            </li>
+ 
+      
+                            </li>
+            
+                                            </ul>
+                </div>
+                    </div>
+    </div>
+    <div class="card-footer d-flex flex-wrap align-items-center">
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-file-excel mr-1"></i>Download selected template        </button>
+        <a href="/prems/cas" class="btn btn-default ml-2">Cancel</a>    </div>
+    </form></div>
+
+            </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+            </aside>
+    <!-- /.control-sidebar -->
+
+    <!-- Main Footer -->
+ 
+
+<!-- jQuery -->
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript maalum kwa marks entry (keyboard, validation) -->
+<script>
+  
+document.addEventListener('DOMContentLoaded', function() {
+    var cbs = document.querySelectorAll('.subject-cb');
+    var selectAll = document.getElementById('select-all-subjects');
+    var deselectAll = document.getElementById('deselect-all-subjects');
+    if (selectAll) {
+        selectAll.addEventListener('click', function() { cbs.forEach(function(cb) { cb.checked = true; }); });
+    }
+    if (deselectAll) {
+        deselectAll.addEventListener('click', function() { cbs.forEach(function(cb) { cb.checked = false; }); });
+    }
+});  // ...
+</script>
+{% endblock %}
+
+

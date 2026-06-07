@@ -1,0 +1,475 @@
+{% extends "academic_base.html" %}
+{% block title %}Rekebisha Stream, Simu, na Taarifa za Wanafunzi{% endblock %}
+{% block extra_css %}
+<style>
+    .filter-bar {
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    .filter-bar select, .filter-bar button {
+        padding: 0.4rem 1rem;
+        border-radius: 30px;
+        border: 1px solid #ccc;
+    }
+    .table-container {
+        overflow-x: auto;
+        max-height: 70vh;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+        vertical-align: middle;
+    }
+    th {
+        background: #1e4a3d;
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    input {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 0.9rem;
+    }
+    input:focus {
+        border-color: #50faab;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(16, 39, 32, 0.66);
+    }
+    .btn-save {
+        background: #1e4a26 !important;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.8rem;
+        border-radius: 40px;
+        margin-top: 1rem;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    .btn-save:hover {
+        background: #4be933;
+    }
+    .status-msg {
+        margin-left: 1rem;
+        font-size: 0.9rem;
+    }
+    .btn1 {
+        background: #112eea !important;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.8rem;
+        border-radius: 2px !important;
+        margin-top: 1rem;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    .btn1:hover {
+        background: #4be933 !important;
+    }
+    .btn-edit, .btn-delete {
+        padding: 4px 8px;
+        margin: 0 2px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        border: none;
+    }
+    .btn-edit {
+        background-color: #2196F3;
+        color: white;
+    }
+    .btn-delete {
+        background-color: #f44336;
+        color: white;
+    }
+    .modal-custom {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    .modal-custom.active {
+        display: flex;
+    }
+    .modal-content-custom {
+        background: white;
+        padding: 20px;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    .close-modal {
+        cursor: pointer;
+        font-size: 1.5rem;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+    @media (max-width: 680px) {
+        th, td { padding: 6px; font-size: 0.8rem; }
+        input { padding: 4px; }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>✏️ Rekebisha Stream, Simu, na Taarifa za Wanafunzi</h2>
+    <div class="filter-bar">
+        <select id="classFilter" onchange="filterByClass()">
+            <option value="">-- Vidato vyote --</option>
+            {% for c in classes %}
+            <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="filterByClass()" class="btn1">Chuja kidato</button>
+    </div>
+
+    <div class="table-container">
+        <table id="studentsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Jina</th>
+                    <th>Kidato</th>
+                    <th>Stream</th>
+                    <th>Simu</th>
+                    <th>Vitendo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr data-id="{{ student.id }}">
+                    <td>{{ student.id }}</td>
+                    <td class="student-name">{{ student.student_name }}</td>
+                    <td class="student-class">{{ student.current_class }}</td>
+                    <td><input type="text" class="stream-input" value="{{ student.stream or '' }}" placeholder="e.g., A"></td>
+                    <td><input type="tel" class="phone-input" value="{{ student.parent_phone or '' }}" placeholder="0712345678"></td>
+                    <td>
+                        <button class="btn-edit" 
+                                data-id="{{ student.id }}" 
+                                data-name="{{ student.student_name }}" 
+                                data-class="{{ student.current_class }}" 
+                                data-sex="{{ student.sex or '' }}">✏️ Edit</button>
+                        <button class="btn-delete" 
+                                data-id="{{ student.id }}" 
+                                data-name="{{ student.student_name }}">🗑️ Futa</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-3">
+        <button id="saveBtn" class="btn-save">Save changes (Stream & Simu)</button>
+        <span id="statusMsg" class="status-msg"></span>
+    </div>
+</div>
+
+<!-- Modal ya Edit (using 'sex' column) -->
+<div id="editModal" class="modal-custom">
+    <div class="modal-content-custom">
+        <div class="modal-header">
+            <span>Hariri Taarifa za Mwanafunzi</span>
+            <span class="close-modal" onclick="closeEditModal()">&times;</span>
+        </div>
+        <form id="editForm">
+            <input type="hidden" id="edit_id">
+            <div class="form-group">
+                <label>Jina kamili</label>
+                <input type="text" id="edit_name" required>
+            </div>
+            <div class="form-group">
+                <label>Jinsia (Sex)</label>
+                <select id="edit_sex">
+                    <option value="">--Chagua--</option>
+                    <option value="M">Me (Male)</option>
+                    <option value="F">Ke (Female)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Kidato (Form)</label>
+                <select id="edit_class">
+                    <option value="Form1">Form1</option>
+                    <option value="Form2">Form2</option>
+                    <option value="Form3">Form3</option>
+                    <option value="Form4">Form4</option>
+                    <option value="Form5">Form5</option>
+                    <option value="Form6">Form6</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-save" style="background:#2196F3;">Hifadhi Mabadiliko</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal ya Delete (confirmation) with fetch -->
+<div id="deleteModal" class="modal-custom">
+    <div class="modal-content-custom">
+        <div class="modal-header">
+            <span>Thibitisha Kufuta</span>
+            <span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+        </div>
+        <p>Je, una uhakika unamfuta: <strong id="delete_name"></strong>?</p>
+        <p><small>Mwanafunzi atafutwa kabisa pamoja na alama zote na usajili wa mitihani.</small></p>
+        <button id="confirmDeleteBtn" class="btn-delete" style="padding:8px 16px;">Ndiyo, futa kabisa</button>
+        <button type="button" class="btn-edit" onclick="closeDeleteModal()" style="background:#aaa;">Ghairi</button>
+    </div>
+</div>
+
+<script>
+    // Filter by class - reloads page
+    function filterByClass() {
+        const selected = document.getElementById('classFilter').value;
+        if (selected) {
+            window.location.href = "{{ url_for('edit_students') }}?class=" + encodeURIComponent(selected);
+        } else {
+            window.location.href = "{{ url_for('edit_students') }}";
+        }
+    }
+
+    // ENTER navigation (stream & phone inputs)
+    function setupEnterNavigation() {
+        const table = document.getElementById('studentsTable');
+        if (!table) return;
+        const inputs = table.querySelectorAll('input.stream-input, input.phone-input');
+        inputs.forEach((input) => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const rows = table.querySelectorAll('tbody tr');
+                    const currentRow = input.closest('tr');
+                    const rowIndex = Array.from(rows).indexOf(currentRow);
+                    const colIndex = input.closest('td').cellIndex;
+                    const nextRow = rows[rowIndex + 1];
+                    if (nextRow) {
+                        const nextInput = nextRow.cells[colIndex].querySelector('input');
+                        if (nextInput) nextInput.focus();
+                    } else {
+                        const firstRow = rows[0];
+                        if (firstRow) {
+                            const firstInput = firstRow.cells[colIndex].querySelector('input');
+                            if (firstInput) firstInput.focus();
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    // Save all changes (stream & phone) - batch update
+    async function saveAllChanges() {
+        const rows = document.querySelectorAll('#studentsTable tbody tr');
+        const updates = [];
+        rows.forEach(row => {
+            const id = parseInt(row.dataset.id);
+            if (isNaN(id)) return;
+            const streamInput = row.querySelector('.stream-input');
+            const phoneInput = row.querySelector('.phone-input');
+            const stream = streamInput.value.trim() || null;
+            const parent_phone = phoneInput.value.trim() || null;
+            updates.push({ id, stream, parent_phone });
+        });
+        if (updates.length === 0) {
+            document.getElementById('statusMsg').innerHTML = '<span class="text-danger">❌ Hakuna data ya kuhifadhi</span>';
+            return;
+        }
+        const statusSpan = document.getElementById('statusMsg');
+        statusSpan.innerHTML = '<span class="text-info">Inahifadhi...</span>';
+        try {
+            const response = await fetch("{{ url_for('edit_students') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ updates: updates })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                statusSpan.innerHTML = '<span class="text-success">✅ Mabadiliko yamehifadhiwa kikamilifu.</span>';
+                setTimeout(() => statusSpan.innerHTML = '', 3000);
+            } else {
+                statusSpan.innerHTML = `<span class="text-danger">❌ Hitilafu: ${data.error}</span>`;
+            }
+        } catch (err) {
+            statusSpan.innerHTML = `<span class="text-danger">❌ Kosa la mtandao: ${err.message}</span>`;
+        }
+    }
+
+    // Edit Modal functions
+    const editModal = document.getElementById('editModal');
+    const deleteModal = document.getElementById('deleteModal');
+    let currentDeleteId = null;
+
+    function openEditModal(id, name, className, sex) {
+        document.getElementById('edit_id').value = id;
+        document.getElementById('edit_name').value = name;
+        document.getElementById('edit_sex').value = sex || '';
+        document.getElementById('edit_class').value = className;
+        editModal.classList.add('active');
+    }
+    
+    function closeEditModal() {
+        editModal.classList.remove('active');
+    }
+    
+    function openDeleteModal(id, name) {
+        if (!id || id === 'null') {
+            alert("Hitilafu: Kitambulisho cha mwanafunzi hakipo. Tafadhali rejesha ukurasa.");
+            return;
+        }
+        currentDeleteId = id;
+        document.getElementById('delete_name').innerText = name;
+        deleteModal.classList.add('active');
+    }
+    
+    function closeDeleteModal() {
+        deleteModal.classList.remove('active');
+        currentDeleteId = null;
+    }
+    
+    // Delete using fetch
+    async function confirmDelete() {
+        if (!currentDeleteId) {
+            alert("Hakuna mwanafunzi aliyechaguliwa.");
+            return;
+        }
+        try {
+            const response = await fetch(`/delete-student/${currentDeleteId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                alert("Mwanafunzi amefutwa kikamilifu.");
+                window.location.reload(); // Refresh page after deletion
+            } else {
+                const errorText = await response.text();
+                alert("Kosa wakati wa kufuta: " + errorText);
+            }
+        } catch (err) {
+            alert("Kosa la mtandao: " + err.message);
+        }
+        closeDeleteModal();
+    }
+    
+    // Attach edit buttons
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            const name = btn.getAttribute('data-name');
+            const className = btn.getAttribute('data-class');
+            const sex = btn.getAttribute('data-sex');
+            if (!id || id === 'null') {
+                alert("ID ya mwanafunzi haipo. Tafadhali rejesha ukurasa.");
+                return;
+            }
+            openEditModal(id, name, className, sex);
+        });
+    });
+    
+    // Attach delete buttons with robust ID extraction
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            let id = this.getAttribute('data-id');
+            // Kama data-id ni null au tupu, jaribu kusoma ID kutoka safu ya kwanza ya safu hii
+            if (!id || id === 'null' || id === 'None') {
+                const row = this.closest('tr');
+                const firstCell = row.cells[0];
+                if (firstCell) {
+                    id = firstCell.innerText.trim();
+                }
+            }
+            const name = this.getAttribute('data-name') || "Mwanafunzi";
+            openDeleteModal(id, name);
+        });
+    });
+    
+    // Handle edit form submission via AJAX (using 'sex' column)
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit_id').value;
+        const student_name = document.getElementById('edit_name').value;
+        const sex = document.getElementById('edit_sex').value;
+        const current_class = document.getElementById('edit_class').value;
+        
+        try {
+            const response = await fetch(`/update-student/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_name, sex, current_class })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message);
+                const row = document.querySelector(`tr[data-id="${id}"]`);
+                if (row) {
+                    row.querySelector('.student-name').innerText = student_name;
+                    row.querySelector('.student-class').innerText = current_class;
+                    const editBtn = row.querySelector('.btn-edit');
+                    if (editBtn) {
+                        editBtn.setAttribute('data-name', student_name);
+                        editBtn.setAttribute('data-class', current_class);
+                        editBtn.setAttribute('data-sex', sex);
+                    }
+                }
+                closeEditModal();
+            } else {
+                alert('Hitilafu: ' + data.error);
+            }
+        } catch (err) {
+            alert('Kosa la mtandao: ' + err.message);
+        }
+    });
+    
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+        if (event.target === editModal) closeEditModal();
+        if (event.target === deleteModal) closeDeleteModal();
+    };
+    
+    document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        setupEnterNavigation();
+        document.getElementById('saveBtn').addEventListener('click', saveAllChanges);
+    });
+</script>
+{% endblock %}

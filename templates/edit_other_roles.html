@@ -1,0 +1,71 @@
+{% extends "base3.html" %}
+
+{% block title %}Mgawanyo wa majukumu{% endblock %}
+
+
+{% block content %}
+<style>
+    .table-bordered, .table-bordered th, .table-bordered td {
+        border: 1px solid #dee2e6 !important;
+        padding: 12px;
+    }
+    .table thead th {
+        border-bottom: 2px solid #dee2e6;
+    }
+    .btn {
+        border: none;
+        border-radius: 5px;
+        background-color:#066920 ;
+        font-size: 14px;
+        color: #dee2e6;
+    }    
+    th {
+        background-color: #cdcfcd;
+    }
+</style>
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Majukumu mengine</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Jina Kamili</th>
+                        <th>Other Role (sasa)</th>
+                        <th>Hariri</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for teacher in teachers %}
+                    <tr>
+                        <td>{{ teacher.id }}</td>
+                        <td>{{ teacher.teacher_name }}</td>
+                        <td>{{ teacher.other_role or '-' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('edit_other_roles') }}" class="form-inline">
+                                <input type="hidden" name="teacher_id" value="{{ teacher.id }}">
+                                <input list="roleOptions" name="other_role" class="form-control" style="width: 200px;"
+                                       value="{{ teacher.other_role or '' }}" placeholder="Chagua au andika jukumu">
+                                <datalist id="roleOptions">
+                                    {% for role in roles %}
+                                    <option value="{{ role }}">{{ role }}</option>
+                                    {% endfor %}
+                                </datalist>
+                                <button type="submit" class="btn btn-primary btn-sm ml-2">-SAVE-</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">Hakuna walimu waliopatikana.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

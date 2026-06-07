@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Exam Timetable Generator | KIBINDU</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        h1 {
+            color: #1e4a3d;
+            border-left: 5px solid #1e4a3d;
+            padding-left: 1rem;
+            margin-top: 0;
+        }
+        .form-section {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+            color: #1e4a3d;
+            font-size: 0.65rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.5rem 0.7rem;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            transition: 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: #1e4a3d;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(30,74,61,0.1);
+        }
+button {
+    background: transparent;
+    color: #1e4a3d;  /* default rangi ya maandishi ikiwa hakuna class */
+    border: 2px solid currentColor;
+    padding: 0.5rem 1.2rem;
+    border-radius: 40px;  /* pembe zilizozunguka */
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+button:hover {
+    background: #1e4a3d;
+    color: white;
+}
+
+/* Override maalum kwa kila aina */
+.btn-danger {
+    color: #b91c1c;
+}
+.btn-danger:hover {
+    background: #b91c1c;
+    color: white;
+}
+
+.btn-secondary {
+    color: #2c6e5c;
+}
+.btn-secondary:hover {
+    background: #2c6e5c;
+    color: white;
+}
+
+.btn-download {
+    color: #17a2b8;
+    margin-left: 0.5rem;
+}
+.btn-download:hover {
+    background: #17a2b8;
+    color: white;
+}
+        .entries-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+        }
+        .entries-table th, .entries-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .entries-table th {
+            background: #e9ecef;
+        }
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .timetable th, .timetable td {
+            border: 1px solid #999;
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .timetable th {
+            background-color: #d9e7e2;
+            font-weight: bold;
+        }
+        .timetable .day-cell {
+            font-weight: 600;
+            background: #fef9e6;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        hr {
+            margin: 1.2rem 0;
+        }
+        @media (max-width: 680px) {
+            .form-group { min-width: 120px; }
+            .entries-table th, .entries-table td { padding: 4px; }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<div class="container">
+    <h1>📅 Exam Timetable Generator</h1>
+
+    <!-- GROUP 1: Timetable Headings -->
+    <div class="form-section">
+        <h3>📌 Timetable Headings</h3>
+        <div class="form-row">
+            <div class="form-group"><label>Line 1 (Kichwa kikubwa)</label><input type="text" id="headingLine1" value="KIBINDU SECONDARY SCHOOL"></div>
+            <div class="form-group"><label>Line 2 (Kichwa cha pili)</label><input type="text" id="headingLine2" value="FINAL EXAMINATION 2026"></div>
+            <div class="form-group"><label>Line 3 (Kichwa cha tatu)</label><input type="text" id="headingLine3" value="TIMETABLE"></div>
+        </div>
+    </div>
+
+    <!-- GROUP 2: Table Headers (Times) -->
+    <div class="form-section">
+        <h3>⏰ Table Headers</h3>
+        <div class="form-row">
+            <div class="form-group"><label>Morning </label><input type="text" id="morningTime" value="08:00AM - 11:00AM"></div>
+            <div class="form-group"><label>Noon </label><input type="text" id="noonTime" value="12:00PM - 03:00PM"></div>
+        </div>
+    </div>
+
+    <!-- GROUP 3: Data entries (safu za ratiba) -->
+    <div class="form-section">
+        <h3>➕ Columns</h3>
+        <div class="form-row">
+            <div class="form-group"><label>Day</label><input type="text" id="dayName" placeholder="e.g., Monday"></div>
+            <div class="form-group"><label>Date</label><input type="date" id="dateValue"></div>
+            <div class="form-group"><label>Morning subject</label><input type="text" id="morningSubject" placeholder="e.g., Biology"></div>
+            <div class="form-group"><label>Noon subject</label><input type="text" id="noonSubject" placeholder="e.g., Geography"></div>
+            <div class="form-group"><button id="addEntryBtn">➕ Add tr</button></div>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="entries-table" id="entriesTable">
+                <thead><tr><th>Day</th><th>Date</th><th>Morning Subject</th><th>Noon Subject</th><th>Delete tr</th></tr></thead>
+                <tbody id="entriesBody"></tbody>
+            </table>
+        </div>
+        <div class="action-buttons">
+            <button id="generateBtn" class="btn-secondary">📋 Create Table</button>
+            <button id="clearEntriesBtn" class="btn-danger">🗑️ Clear all rows</button>
+        </div>
+    </div>
+
+    <!-- Timetable output -->
+    <div id="timetableOutput" style="margin-top: 1.5rem;">
+        <!-- Jedwali litaundwa hapa -->
+    </div>
+</div>
+
+<script>
+    // Array ya kuweka data za safu
+    let entries = [];
+
+    // Reference to elements
+    const entriesBody = document.getElementById('entriesBody');
+    const addBtn = document.getElementById('addEntryBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const clearBtn = document.getElementById('clearEntriesBtn');
+
+    // Function to render the entries table (list of added rows)
+    function renderEntriesTable() {
+        entriesBody.innerHTML = '';
+        if (entries.length === 0) {
+            entriesBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Hakuna safu bado. Ongeza safu.</td></tr>';
+            return;
+        }
+        entries.forEach((entry, idx) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${escapeHtml(entry.day)}</td>
+                <td>${escapeHtml(entry.date)}</td>
+                <td>${escapeHtml(entry.morningSubject)}</td>
+                <td>${escapeHtml(entry.noonSubject)}</td>
+                <td><button class="removeEntryBtn" data-index="${idx}" style="background:#b91c1c; padding:0.2rem 0.6rem;">✖</button></td>
+            `;
+            entriesBody.appendChild(row);
+        });
+        // Attach remove event listeners to each remove button
+        document.querySelectorAll('.removeEntryBtn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(btn.getAttribute('data-index'), 10);
+                entries.splice(idx, 1);
+                renderEntriesTable();
+                // Clear timetable output when entries change
+                document.getElementById('timetableOutput').innerHTML = '';
+            });
+        });
+    }
+
+    // Add entry from input fields
+    function addEntry() {
+        const day = document.getElementById('dayName').value.trim();
+        const date = document.getElementById('dateValue').value;
+        const morningSubject = document.getElementById('morningSubject').value.trim();
+        const noonSubject = document.getElementById('noonSubject').value.trim();
+
+        if (!day) {
+            alert('Tafadhali ingiza siku (e.g., Monday).');
+            return;
+        }
+        if (!date) {
+            alert('Tafadhali chagua tarehe.');
+            return;
+        }
+    // Badilisha: angalau somo moja lijazwe (asubuhi au mchana)
+    if (!morningSubject && !noonSubject) {
+        alert('Tafadhali ingiza angalau somo moja (asubuhi au mchana).');
+        return;
+    }
+
+        entries.push({
+            day: day,
+            date: date,
+            morningSubject: morningSubject,
+            noonSubject: noonSubject
+        });
+        renderEntriesTable();
+        // Clear input fields (optional)
+        document.getElementById('dayName').value = '';
+        document.getElementById('dateValue').value = '';
+        document.getElementById('morningSubject').value = '';
+        document.getElementById('noonSubject').value = '';
+        // Hide previous timetable
+        document.getElementById('timetableOutput').innerHTML = '';
+    }
+
+    // Generate the final timetable table based on entries and header settings
+    function generateTimetable() {
+        if (entries.length === 0) {
+            alert('Hakuna safu za ratiba. Tafadhali ongeza angalau safu moja.');
+            return;
+        }
+
+        const heading1 = escapeHtml(document.getElementById('headingLine1').value) || 'KIBINDU SECONDARY SCHOOL';
+        const heading2 = escapeHtml(document.getElementById('headingLine2').value) || 'FINAL EXAMINATION 2026';
+        const heading3 = escapeHtml(document.getElementById('headingLine3').value) || 'TIMETABLE';
+        const morningTime = escapeHtml(document.getElementById('morningTime').value) || '08:00AM - 11:00AM';
+        const noonTime = escapeHtml(document.getElementById('noonTime').value) || '12:00PM - 03:00PM';
+
+        // Build the HTML table
+        let html = `<div id="timetableContainer" style="background: white; border-radius: 16px; padding: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">`;
+        html += `<div style="text-align: center; margin-bottom: 0.8rem;">`;
+        html += `<h3 style="margin:0;">${heading1}</h3>`;
+        html += `<p style="margin:0; font-weight:500;">${heading2}</p>`;
+        html += `<p style="margin:0; color:#2c6e5c;">${heading3}</p>`;
+        html += `</div>`;
+        html += `<table class="timetable">`;
+        html += `<thead>`;
+        html += `<tr>`;
+        html += `<th rowspan="2">Day & Date</th>`;
+        html += `<th colspan="2">Morning session</th>`;
+        html += `<th colspan="2">Noon session</th>`;
+        html += `</tr>`;
+        html += `<tr>`;
+        html += `<th>Subject</th><th>Time</th>`;
+        html += `<th>Subject</th><th>Time</th>`;
+        html += `</tr>`;
+        html += `</thead>`;
+        html += `<tbody>`;
+
+        for (let entry of entries) {
+            const formattedDate = entry.date;
+            let displayDate = formattedDate;
+            if (formattedDate && formattedDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const parts = formattedDate.split('-');
+                displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            html += `<tr>`;
+            html += `<td class="day-cell">${escapeHtml(entry.day)}<br><small>${escapeHtml(displayDate)}</small></td>`;
+            html += `<td>${escapeHtml(entry.morningSubject)}</td>`;
+            html += `<td>${morningTime}</td>`;
+            html += `<td>${escapeHtml(entry.noonSubject)}</td>`;
+            html += `<td>${noonTime}</td>`;
+            html += `</tr>`;
+        }
+        html += `</tbody>`;
+        html += `</table>`;
+        // Add download button inside the output area (or we can add separate button outside; we'll add a button next to generate button)
+        html += `<div style="text-align: right; margin-top: 10px;">
+                    <button id="pdfDownloadBtn" class="btn-download">📥 Pakua Timetable PDF</button>
+                 </div>`;
+        html += `</div>`;
+
+        document.getElementById('timetableOutput').innerHTML = html;
+
+        // Attach event listener to the dynamically created PDF button
+        const pdfBtn = document.getElementById('pdfDownloadBtn');
+        if (pdfBtn) {
+            pdfBtn.addEventListener('click', downloadTimetablePDF);
+        }
+    }
+
+    // Function to download the timetable as PDF using html2pdf
+    async function downloadTimetablePDF() {
+        const element = document.getElementById('timetableContainer');
+        if (!element) {
+            alert('Hakuna timetable ya kupakua. Tafadhali tengeneza timetable kwanza.');
+            return;
+        }
+        // Clone the element to avoid page modifications
+        const clone = element.cloneNode(true);
+        clone.style.width = '100%';
+        clone.style.maxWidth = '100%';
+        clone.style.margin = '0 auto';
+        clone.style.padding = '10px';
+        const wrapper = document.createElement('div');
+        wrapper.appendChild(clone);
+        document.body.appendChild(wrapper);
+        const opt = {
+            margin:        [0.5, 0.5, 0.5, 0.5],
+            filename:     `exam_timetable_${new Date().toISOString().slice(0,19)}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, letterRendering: true, useCORS: false, logging: false },
+            jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' } // timetable ni pana, landscape inafaa
+        };
+        try {
+            await html2pdf().set(opt).from(wrapper).save();
+        } finally {
+            document.body.removeChild(wrapper);
+        }
+    }
+
+    function clearAllEntries() {
+        if (confirm('Futa safu zote za ratiba?')) {
+            entries = [];
+            renderEntriesTable();
+            document.getElementById('timetableOutput').innerHTML = '';
+        }
+    }
+
+    // Helper
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+    }
+
+    // Event listeners
+    addBtn.addEventListener('click', addEntry);
+    generateBtn.addEventListener('click', generateTimetable);
+    clearBtn.addEventListener('click', clearAllEntries);
+
+    // Initialize empty table
+    renderEntriesTable();
+</script>
+</body>
+</html>

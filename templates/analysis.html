@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uchambuzi wa Matokeo | KIBINDU</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f0f2f5;
+        }
+        .main-content {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 1rem;
+        }
+        .filter-bar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .filter-bar .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .filter-bar label {
+            display: block;
+            font-weight: 600;
+            color: #1e4a3d;
+            margin-bottom: 0.4rem;
+        }
+        .filter-bar select, .filter-bar button {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #ced4da;
+            border-radius: 12px;
+            font-size: 0.95rem;
+        }
+        .filter-bar button {
+            background: #1e4a3d;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .filter-bar button:hover {
+            background: #0f2c23;
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+        .card h3 {
+            color: #1e4a3d;
+            border-left: 5px solid #1e4a3d;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+            text-align: left;
+            vertical-align: middle;
+        }
+        th {
+            background: #e9ecef;
+            font-weight: 700;
+        }
+        .absent-badge {
+            background: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            font-size: 1rem;
+            color: #1e4a3d;
+        }
+        .text-muted {
+            color: #6c757d;
+            font-style: italic;
+        }
+        @media (max-width: 768px) {
+            th, td { padding: 0.4rem; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="main-content">
+    <!-- Filter bar -->
+    <div class="filter-bar">
+        <div class="form-group">
+            <label>Aina ya Mtihani</label>
+            <select id="examTypeSelect">
+                <option value="">-- Chagua --</option>
+                {% for exam in exam_types %}
+                <option value="{{ exam.id }}">{{ exam.exam_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Kidato (Class)</label>
+            <select id="classSelect">
+                <option value="">-- Chagua --</option>
+                {% for c in classes %}
+                <option value="{{ c }}">{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <button id="loadBtn">🔍 View</button>
+        </div>
+        <!-- Badilisha button ya export -->
+            <button id="exportBtn" class="btn-success" style="background:#28a745; color:white; border:none; border-radius:12px;" disabled>📥 Pakua Excel (Formatted)</button>        
+        </div>
+
+    <!-- Loading indicator -->
+    <div id="loadingIndicator" class="loading" style="display: none;">Inapakia data, tafadhali subiri...</div>
+
+    <!-- Card 1: Subject statistics (with total_enrolled and absent) -->
+    <div id="subjectStatsCard" class="card" style="display: none;">
+        <h3>📊 Takwimu za Masomo (Waliosajiliwa na Watoro)</h3>
+        <div class="table-responsive">
+            <table id="subjectTable">
+                <thead>
+                    <tr>
+                        <th>Subjects</th>
+                        <th>Reg</th>
+                        <th>Abs</th>
+                        <th>A</th>
+                        <th>B</th>
+                        <th>C</th>
+                        <th>D</th>
+                        <th>F</th>
+                        <th>GPA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="9" class="text-muted">Hakuna data</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Card 2: Top 10 best students -->
+    <div id="topBestCard" class="card" style="display: none;">
+        <h3>🏆 Wanafunzi 10 Bora (Waliopima Mtihani)</h3>
+        <div class="table-responsive">
+            <table id="bestTable">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>Studnt name</th>
+                        <th>Point</th>
+                        <th>Division</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="4" class="text-muted">Hakuna data</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Card 3: Top 10 worst students (only those who sat for exam) -->
+    <div id="topWorstCard" class="card" style="display: none;">
+        <h3>⚠️ Wanafunzi 10 Waliofeli Zaidi (Waliopima tu)</h3>
+        <div class="table-responsive">
+            <table id="worstTable">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>Student name</th>
+                        <th>Pointi</th>
+                        <th>Division</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="4" class="text-muted">Hakuna data</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Card 4: Division summary by sex -->
+    <div id="divisionCard" class="card" style="display: none;">
+        <h3>📊 Uchambuzi wa Divisions kwa Jinsia</h3>
+        <div class="table-responsive">
+            <table id="divisionTable">
+                <thead>
+                    <tr>
+                        <th>Sex</th>
+                        <th>I</th>
+                        <th>II</th>
+                        <th>III</th>
+                        <th>IV</th>
+                        <th>0</th>
+                        <th>Abs</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="8" class="text-muted">Hakuna data</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('loadBtn').addEventListener('click', async () => {
+        const examTypeId = document.getElementById('examTypeSelect').value;
+        const className = document.getElementById('classSelect').value;
+        if (!examTypeId || !className) {
+            alert('Tafadhali chagua aina ya mtihani na kidato.');
+            return;
+        }
+
+        // Show loading, hide cards
+        document.getElementById('loadingIndicator').style.display = 'block';
+        document.getElementById('subjectStatsCard').style.display = 'none';
+        document.getElementById('topBestCard').style.display = 'none';
+        document.getElementById('topWorstCard').style.display = 'none';
+        document.getElementById('divisionCard').style.display = 'none';
+
+        try {
+            const response = await fetch('/api/analysis-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exam_type_id: examTypeId, class: className })
+            });
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            // ========== 1. Subject statistics ==========
+            const subjectTbody = document.querySelector('#subjectTable tbody');
+            subjectTbody.innerHTML = '';
+            if (data.subject_stats && data.subject_stats.length > 0) {
+                data.subject_stats.forEach(subj => {
+                    const row = subjectTbody.insertRow();
+                    row.insertCell(0).innerText = subj.subject;
+                    row.insertCell(1).innerText = subj.total_enrolled ?? '?';
+                    const absentCell = row.insertCell(2);
+                    const absentCount = subj.absent ?? (subj.total_enrolled - (subj.count_A+subj.count_B+subj.count_C+subj.count_D+subj.count_F));
+                    absentCell.innerHTML = `<span class="absent-badge">${absentCount}</span>`;
+                    row.insertCell(3).innerText = subj.count_A;
+                    row.insertCell(4).innerText = subj.count_B;
+                    row.insertCell(5).innerText = subj.count_C;
+                    row.insertCell(6).innerText = subj.count_D;
+                    row.insertCell(7).innerText = subj.count_F;
+                    row.insertCell(8).innerText = subj.gpa;
+                });
+                document.getElementById('subjectStatsCard').style.display = 'block';
+            } else {
+                subjectTbody.innerHTML = '<tr><td colspan="9" class="text-muted">Hakuna data ya masomo.</td></tr>';
+                document.getElementById('subjectStatsCard').style.display = 'block';
+            }
+
+            // ========== 2. Top 10 best ==========
+            const bestTbody = document.querySelector('#bestTable tbody');
+            bestTbody.innerHTML = '';
+            if (data.top_best && data.top_best.length > 0) {
+                data.top_best.forEach(s => {
+                    const row = bestTbody.insertRow();
+                    row.insertCell(0).innerText = s.position;
+                    row.insertCell(1).innerText = s.student_name;
+                    row.insertCell(2).innerText = s.total_points;
+                    row.insertCell(3).innerText = s.division;
+                });
+                document.getElementById('topBestCard').style.display = 'block';
+            } else {
+                bestTbody.innerHTML = '<tr><td colspan="4" class="text-muted">Hakuna wanafunzi waliojitokeza.</td></tr>';
+                document.getElementById('topBestCard').style.display = 'block';
+            }
+
+            // ========== 3. Top 10 worst ==========
+            const worstTbody = document.querySelector('#worstTable tbody');
+            worstTbody.innerHTML = '';
+            if (data.top_worst && data.top_worst.length > 0) {
+                data.top_worst.forEach(s => {
+                    const row = worstTbody.insertRow();
+                    row.insertCell(0).innerText = s.position;
+                    row.insertCell(1).innerText = s.student_name;
+                    row.insertCell(2).innerText = s.total_points;
+                    row.insertCell(3).innerText = s.division;
+                });
+                document.getElementById('topWorstCard').style.display = 'block';
+            } else {
+                worstTbody.innerHTML = '<tr><td colspan="4" class="text-muted">Hakuna data ya waliofeli.</td></tr>';
+                document.getElementById('topWorstCard').style.display = 'block';
+            }
+
+            // ========== 4. Division summary by sex ==========
+            const divisionTbody = document.querySelector('#divisionTable tbody');
+            divisionTbody.innerHTML = '';
+            if (data.division_summary && data.division_summary.length > 0) {
+                data.division_summary.forEach(row => {
+                    const tr = divisionTbody.insertRow();
+                    // Badilisha jina la jinsia inavyotakikana
+                    let sexLabel = row.sex;
+                    if (row.sex === 'M') sexLabel = 'Me (M)';
+                    if (row.sex === 'F') sexLabel = 'Ke (F)';
+                    tr.insertCell(0).innerText = sexLabel;
+                    tr.insertCell(1).innerText = row.I;
+                    tr.insertCell(2).innerText = row.II;
+                    tr.insertCell(3).innerText = row.III;
+                    tr.insertCell(4).innerText = row.IV;
+                    tr.insertCell(5).innerText = row['0'];
+                    tr.insertCell(6).innerText = row.Abs;
+                    tr.insertCell(7).innerText = row.Total;
+                });
+                // Ongeza safu ya Jumla
+                const totalRow = divisionTbody.insertRow();
+                totalRow.style.fontWeight = 'bold';
+                totalRow.insertCell(0).innerText = 'Jumla';
+                const sums = data.division_summary.reduce((acc, r) => {
+                    acc.I += r.I; acc.II += r.II; acc.III += r.III; acc.IV += r.IV;
+                    acc['0'] += r['0']; acc.Abs += r.Abs; acc.Total += r.Total;
+                    return acc;
+                }, {I:0, II:0, III:0, IV:0, '0':0, Abs:0, Total:0});
+                totalRow.insertCell(1).innerText = sums.I;
+                totalRow.insertCell(2).innerText = sums.II;
+                totalRow.insertCell(3).innerText = sums.III;
+                totalRow.insertCell(4).innerText = sums.IV;
+                totalRow.insertCell(5).innerText = sums['0'];
+                totalRow.insertCell(6).innerText = sums.Abs;
+                totalRow.insertCell(7).innerText = sums.Total;
+                
+                document.getElementById('divisionCard').style.display = 'block';
+            } else {
+                divisionTbody.innerHTML = '<tr><td colspan="8" class="text-muted">Hakuna data ya divisions.</td></tr>';
+                document.getElementById('divisionCard').style.display = 'block';
+            }
+
+        } catch (err) {
+            alert('Hitilafu: ' + err.message);
+        } finally {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+    });
+document.getElementById('exportBtn').addEventListener('click', async () => {
+    const examTypeId = document.getElementById('examTypeSelect').value;
+    const className = document.getElementById('classSelect').value;
+    const examName = document.getElementById('examTypeSelect').options[document.getElementById('examTypeSelect').selectedIndex]?.text || 'Mtihani';
+    
+    if (!examTypeId || !className) {
+        alert('Tafadhali chagua aina ya mtihani na kidato kwanza.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/export-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                exam_type_id: examTypeId, 
+                class: className,
+                exam_name: examName
+            })
+        });
+        
+        // Kama kuna kosa la server (500, 400), majibu yatakuwa JSON
+        if (!response.ok) {
+            const errorText = await response.text();
+            let errorMsg = 'Kosa la server';
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorMsg = errorJson.error || errorMsg;
+            } catch(e) {}
+            alert('Hitilafu: ' + errorMsg);
+            return;
+        }
+        
+        // Kama ni faili ya Excel, pakua
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        // Jina la faili kutoka header au tengeneza la kawaida
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = `Uchambuzi_${className}_${examName}.xlsx`;
+        if (contentDisposition && contentDisposition.includes('filename=')) {
+            filename = contentDisposition.split('filename=')[1].replace(/"/g, '');
+        }
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        alert('Kosa la mtandao: ' + err.message);
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,94 @@
+{% extends "base2.html" %}
+
+{% block title %}Taarifa za Walimu{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Subject Teacher</h3>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <table id="teachersTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Subjects</th>
+                                <th>Other roles</th>
+                                <th>On Duty</th>
+                            </thead>
+                        <tbody>
+                            {% for teacher in teachers %}
+                            <tr>
+                                <td>{{ teacher['teacher_name'] }}</td>
+                                <td>{{ teacher['subjects'] }}</td>
+                                <td>{{ teacher['other_role'] or '-' }}</td>
+                                <td>
+                                    {% if teacher['week_status'] == 'on_duty' %}
+                                        <span style="font-size: small; color: rgb(9, 106, 17);">✔️YES</span>
+                                    {% else %}
+                                        ✖️NO
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4">Hakuna walimu waliopatikana.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <a href="/sync-subjects" style="background-color: #2196F3; color: white;">Subjects</a>
+                </div>
+                <!-- /.card-body -->
+            </div>
+            
+            <!-- /.card -->
+        </div>
+        
+        <!-- /.col -->
+    </div>
+    <!-- /.row -->
+</div>
+
+<!-- /.container-fluid -->
+{% endblock %}
+
+{% block extra_js %}
+<!-- DataTables  & Plugins (ikiwa unatumia) -->
+<script>
+    $(function () {
+        $('#teachersTable').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+    });
+    
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Piga endpoint ya kusasisha week_status mara moja ukurasa unapopakiwa
+        fetch('/api/update-week-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Week status updated:', data);
+            // Ikiwa unataka kuonyesha ujumbe au kuburudisha baadhi ya vipengele, fanya hapa
+            // Kwa mfano, weka upya maandishi ya "Mwalimu wa Zamu" kwenye sidebar ikiwa ipo
+        })
+        .catch(error => console.error('Error updating week status:', error));
+    });
+</script>
+{% endblock %}

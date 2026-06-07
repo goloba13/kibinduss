@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Sitting Plan | KIBINDU</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #1e4a3d;
+            border-left: 5px solid #1e4a3d;
+            padding-left: 1rem;
+            margin-top: 0;
+        }
+        .form-card {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: flex-end;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #1e4a3d;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+        button {
+            background: #1e4a3d;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-download {
+            background: #2c6e5c;
+            margin-left: 1rem;
+        }
+        .preview-info {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #e9ecef;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .plan-preview {
+            background: #fff9f0;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+        .preview-grid {
+            display: grid;
+            gap: 8px 4px;
+            justify-content: center;
+        }
+        .preview-desk {
+            background: #fef9e6;
+            border: 2px solid #c0a86a;
+            border-radius: 6px;
+            text-align: center;
+            padding: 8px 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .preview-desk-empty {
+            visibility: hidden;  /* hifadhi nafasi lakini isionekane */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📋 Sitting Plan</h1>
+
+    <div class="form-card">
+        <div class="form-row">
+            <div class="form-group"><label>Number of desks</label><input type="number" id="total" value="40" min="1" step="1"></div>
+            <div class="form-group"><label>Index format</label><input type="text" id="pattern" value="S3177/{number:04d}"><small class="help-text" style="display:block;">e.g., {number}, {number:04d}</small></div>
+            <div class="form-group"><label>Start number</label><input type="number" id="start" value="1" min="1"></div>
+            <div class="form-group"><label>Door location</label><select id="door">
+                <option value="top-left">⬆️ Juu kushoto</option>
+                <option value="top-right">⬆️ Juu kulia</option>
+                <option value="bottom-left">⬇️ Chini kushoto</option>
+                <option value="bottom-right">⬇️ Chini kulia</option>
+            </select></div>
+            <div class="form-group"><label>Columns</label><input type="number" id="columns" value="5" min="1"></div>
+            <div class="form-group"><label>Form</label><input type="text" id="formText" value="IV"></div>
+            <div class="form-group"><label>Room</label><input type="text" id="roomText" value="01"></div>
+        </div>
+        <div class="form-row" style="margin-top:0.5rem">
+            <div class="form-group"><label>Heading line 1</label><input type="text" id="heading1" value="KIBINDU SECONDARY SCHOOL"></div>
+            <div class="form-group"><label>Heading line 2</label><input type="text" id="heading2" value="MIDTERM EXAMINATION 2026"></div>
+            <div class="form-group"><button id="previewBtn">🔄 Preview</button><button id="downloadBtn" class="btn-download">📥 Download PDF</button></div>
+        </div>
+    </div>
+
+    <div class="preview-info">✓ Bonyeza "Download PDF" kupakua faili kamili</div>
+    <div id="previewArea" class="plan-preview"></div>
+</div>
+
+<script>
+    // ---------- Kazi ya kukokotoa mpangilio wa viti (sawa na backend) ----------
+    function getSeatOrder(rows, cols, doorPos) {
+        // Amua mwelekeo wa kwanza wa safu mlalo (down = juu->chini, up = chini->juu)
+        let firstDown = (doorPos === 'top-left' || doorPos === 'top-right');
+        // Amua mwelekeo wa safu wima (kushoto->kulia au kulia->kushoto)
+        let colIndices;
+        if (doorPos === 'top-left' || doorPos === 'bottom-left') {
+            colIndices = Array.from({length: cols}, (_, i) => i);
+        } else {
+            colIndices = Array.from({length: cols}, (_, i) => cols - 1 - i);
+        }
+        let order = [];
+        for (let idx = 0; idx < colIndices.length; idx++) {
+            let col = colIndices[idx];
+            let down = (idx % 2 === 0) ? firstDown : !firstDown;
+            if (down) {
+                for (let row = 0; row < rows; row++) order.push([row, col]);
+            } else {
+                for (let row = rows-1; row >= 0; row--) order.push([row, col]);
+            }
+        }
+        return order;
+    }
+
+    // ---------- Kukokotoa namba ya desk kwa mujibu wa pattern ----------
+    function formatNumber(num, pattern, start) {
+        let actual = start + num - 1;
+        let regex = /\{number(?::([^}]+))?\}/;
+        let match = pattern.match(regex);
+        if (!match) return pattern.replace(/\{number\}/g, actual);
+        let spec = (match[1] || '');
+        spec = spec.replace(/[dD]$/, '');
+        if (spec === '') return actual.toString();
+        if (/^\d+$/.test(spec)) {
+            let width = parseInt(spec, 10);
+            return actual.toString().padStart(width, '0');
+        }
+        return actual.toString();
+    }
+
+    // ---------- Onyesha preview ----------
+    function renderPreview() {
+        let total = parseInt(document.getElementById('total').value);
+        let start = parseInt(document.getElementById('start').value);
+        let pattern = document.getElementById('pattern').value.trim() || '{number}';
+        let doorPos = document.getElementById('door').value;
+        let cols = parseInt(document.getElementById('columns').value);
+        let formText = document.getElementById('formText').value;
+        let roomText = document.getElementById('roomText').value;
+        let heading1 = document.getElementById('heading1').value;
+        let heading2 = document.getElementById('heading2').value;
+
+        if (isNaN(total) || total <= 0) { alert('Idadi ya desks ni sahihi'); return; }
+        if (isNaN(cols) || cols <= 0) { alert('Idadi ya columns ni sahihi'); return; }
+
+        let rows = Math.ceil(total / cols);
+        // Tengeneza namba za desk
+        let deskNumbers = [];
+        for (let i = 1; i <= total; i++) {
+            deskNumbers.push(formatNumber(i, pattern, start));
+        }
+        // Pata mpangilio wa viti kwa zig-zag
+        let seatOrder = getSeatOrder(rows, cols, doorPos);
+        // Unda matrix ya rows x cols (sili tupu = null)
+        let matrix = Array(rows).fill().map(() => Array(cols).fill(null));
+        for (let idx = 0; idx < seatOrder.length && idx < deskNumbers.length; idx++) {
+            let [r, c] = seatOrder[idx];
+            if (r < rows && c < cols) matrix[r][c] = deskNumbers[idx];
+        }
+
+        // Jenga muundo wa html kwa kutumia gridi
+        let html = `<div style="text-align:center; margin-bottom:1rem;"><strong>${escapeHtml(heading1)}</strong><br>${escapeHtml(heading2)}<br>Form: ${escapeHtml(formText)} | Room: ${escapeHtml(roomText)}</div>`;
+        html += `<div class="preview-grid" style="grid-template-columns: repeat(${cols}, minmax(70px, 1fr)); gap: 8px 4px;">`;
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                let val = matrix[r][c];
+                if (val !== null) {
+                    html += `<div class="preview-desk">${escapeHtml(val)}</div>`;
+                } else {
+                    html += `<div class="preview-desk preview-desk-empty">-</div>`;
+                }
+            }
+        }
+        html += `</div>`;
+        document.getElementById('previewArea').innerHTML = html;
+    }
+
+    function escapeHtml(s) {
+        if (!s) return '';
+        return s.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+    }
+
+    // ---------- Kitufe cha download (tunatumia backend ya flask) ----------
+    document.getElementById('downloadBtn').addEventListener('click', async () => {
+        const data = {
+            total: document.getElementById('total').value,
+            start: document.getElementById('start').value,
+            pattern: document.getElementById('pattern').value.trim() || '{number}',
+            doorPos: document.getElementById('door').value,
+            columns: document.getElementById('columns').value,
+            formText: document.getElementById('formText').value,
+            roomText: document.getElementById('roomText').value,
+            heading1: document.getElementById('heading1').value,
+            heading2: document.getElementById('heading2').value
+        };
+        try {
+            const res = await fetch('/download-sitting-plan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                alert('Kosa: ' + (err.error || 'Tatizo la server'));
+                return;
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sitting_plan.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (e) { alert('Kosa la mtandao: ' + e.message); }
+    });
+
+    document.getElementById('previewBtn').addEventListener('click', renderPreview);
+    // Onyesha preview mara moja ukurasa unapopakia
+    renderPreview();
+</script>
+</body>
+</html>

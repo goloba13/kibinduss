@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher on Duty Report - KIBINDU</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 9pt;
+            line-height: 1;
+            color: #000;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1e4a3d;
+            padding-bottom: 10px;
+        }
+        .school-name {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #1e4a3d;
+        }
+        .report-title {
+            font-size: 16pt;
+            margin-top: 5px;
+        }
+        .tod-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 10pt;
+        }
+        .section {
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        .section-title {
+            background-color: #386538;
+            color: white;
+            padding: 5px 8px;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            page-break-after: avoid;
+        }
+        .question-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 4px 8px;
+            align-items: baseline;
+            margin-bottom: 5px;
+        }
+        .question-label {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .answer {
+            font-weight: normal;
+        }
+        .sub-section {
+            margin-top: 8px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 7pt;
+        }
+        .attendance-table th, .attendance-table td {
+            border: 1px solid #999;
+            padding: 4px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .attendance-table th {
+            background-color: #e9ecef;
+        }
+        .signature-line {
+            margin-top: 30px;
+            border-top: 1px solid #000;
+            width: 250px;
+            text-align: center;
+            padding-top: 5px;
+        }
+        .blank-lines {
+            margin-top: 10px;
+            line-height: 1.8;
+            white-space: pre-line;
+        }
+        .content-wrapper {
+            min-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        footer {
+            text-align: center;
+            font-size: 8pt;
+            margin-top: 30px;
+            color: #666;
+        }
+        .total-row {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .percentage-row {
+            background-color: #e9ecef;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="content-wrapper">
+    <div>
+        <div class="header">
+            <div class="school-name">KIBINDU SECONDARY SCHOOL</div>
+            <div class="report-title">Teacher on Duty Report</div>
+        </div>
+        <div class="tod-details">
+            <span><strong>T.O.D Name:</strong> {{ tod_name }}</span>
+            <span><strong>Date:</strong> {{ date }} ({{ day_of_week }})</span>
+        </div>
+
+
+<!-- Morning number -->
+
+        <!-- 1. MORNING ACTIVITIES -->
+        <div class="section">
+            <div class="section-title">1. Morning Activities</div>
+            <div class="question-grid">
+                <span class="question-label">Morning number (attendance):</span>
+                <span class="answer">{{ morning_number }} came early out of {{ total_registered_all }} students</span>
+                <span class="question-label">Cleanliness:</span>
+                <span class="answer">{{ cleanliness }}</span>
+                <span class="question-label">Other activities:</span>
+                <span class="answer">{{ other_activities }}</span>
+            </div>
+        </div>
+
+        <!-- 2. COMBINED ATTENDANCE TABLE (ALL FORMS WITH DATA) -->
+        <div class="section">
+            <div class="section-title">2. Students Attendance by Form and Stream</div>
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Form</th>
+                        <th rowspan="2">Stream</th>
+                        <th colspan="2">Present</th>
+                        <th colspan="2">Permission</th>
+                        <th colspan="2">Sick</th>
+                        <th colspan="2">Registered</th>
+                        <th colspan="2">Absent</th>
+                    </tr>
+                    <tr>
+                        <th>Boys</th><th>Girls</th>
+                        <th>Boys</th><th>Girls</th>
+                        <th>Boys</th><th>Girls</th>
+                        <th>Boys</th><th>Girls</th>
+                        <th>Boys</th><th>Girls</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set forms_order = ['form1', 'form2', 'form3', 'form4'] %}
+                    {% set form_names = {'form1': 'Form 1', 'form2': 'Form 2', 'form3': 'Form 3', 'form4': 'Form 4'} %}
+                    
+                    {# Use namespace to hold totals (mutable) #}
+                    {% set ns = namespace(
+                        total_present_boys=0,
+                        total_present_girls=0,
+                        total_permission_boys=0,
+                        total_permission_girls=0,
+                        total_sick_boys=0,
+                        total_sick_girls=0,
+                        total_registered_boys=0,
+                        total_registered_girls=0,
+                        total_absent_boys=0,
+                        total_absent_girls=0
+                    ) %}
+                    
+                    {% for form_key in forms_order %}
+                        {% set form_data = attendance.get(form_key, {}) %}
+                        {% set streams = form_data.streams %}
+                        {% if streams|length > 0 %}
+                            {% for stream in streams %}
+                                {% set present_b = stream.present_boys|default(0) %}
+                                {% set present_g = stream.present_girls|default(0) %}
+                                {% set perm_b = stream.permission_boys|default(0) %}
+                                {% set perm_g = stream.permission_girls|default(0) %}
+                                {% set sick_b = stream.sick_boys|default(0) %}
+                                {% set sick_g = stream.sick_girls|default(0) %}
+                                {% set reg_b = stream.registered_boys|default(0) %}
+                                {% set reg_g = stream.registered_girls|default(0) %}
+                                {% set absent_b = reg_b - (present_b + perm_b) %}
+                                {% set absent_g = reg_g - (present_g + perm_g) %}
+                                {% if absent_b < 0 %}{% set absent_b = 0 %}{% endif %}
+                                {% if absent_g < 0 %}{% set absent_g = 0 %}{% endif %}
+                                
+                                {# Accumulate totals using namespace #}
+                                {% set ns.total_present_boys = ns.total_present_boys + present_b %}
+                                {% set ns.total_present_girls = ns.total_present_girls + present_g %}
+                                {% set ns.total_permission_boys = ns.total_permission_boys + perm_b %}
+                                {% set ns.total_permission_girls = ns.total_permission_girls + perm_g %}
+                                {% set ns.total_sick_boys = ns.total_sick_boys + sick_b %}
+                                {% set ns.total_sick_girls = ns.total_sick_girls + sick_g %}
+                                {% set ns.total_registered_boys = ns.total_registered_boys + reg_b %}
+                                {% set ns.total_registered_girls = ns.total_registered_girls + reg_g %}
+                                {% set ns.total_absent_boys = ns.total_absent_boys + absent_b %}
+                                {% set ns.total_absent_girls = ns.total_absent_girls + absent_g %}
+                                
+                                {% if loop.first %}
+                                    <tr>
+                                        <td rowspan="{{ streams|length }}">{{ form_names[form_key] }}</td>
+                                        <td>{{ stream.streamName }}</td>
+                                        <td>{{ present_b }}</td><td>{{ present_g }}</td>
+                                        <td>{{ perm_b }}</td><td>{{ perm_g }}</td>
+                                        <td>{{ sick_b }}</td><td>{{ sick_g }}</td>
+                                        <td>{{ reg_b }}</td><td>{{ reg_g }}</td>
+                                        <td>{{ absent_b }}</td><td>{{ absent_g }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td>{{ stream.streamName }}</td>
+                                        <td>{{ present_b }}</td><td>{{ present_g }}</td>
+                                        <td>{{ perm_b }}</td><td>{{ perm_g }}</td>
+                                        <td>{{ sick_b }}</td><td>{{ sick_g }}</td>
+                                        <td>{{ reg_b }}</td><td>{{ reg_g }}</td>
+                                        <td>{{ absent_b }}</td><td>{{ absent_g }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {# If no streams for this form, show a row with zeros #}
+                            <tr>
+                                <td>{{ form_names[form_key] }}</td>
+                                <td>-</td>
+                                <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {# TOTAL ROW #}
+                    {% if ns.total_registered_boys > 0 or ns.total_registered_girls > 0 %}
+                    <tr class="total-row">
+                        <td colspan="2"><strong>Jumla (Total)</strong></td>
+                        <td><strong>{{ ns.total_present_boys }}</strong></td>
+                        <td><strong>{{ ns.total_present_girls }}</strong></td>
+                        <td><strong>{{ ns.total_permission_boys }}</strong></td>
+                        <td><strong>{{ ns.total_permission_girls }}</strong></td>
+                        <td><strong>{{ ns.total_sick_boys }}</strong></td>
+                        <td><strong>{{ ns.total_sick_girls }}</strong></td>
+                        <td><strong>{{ ns.total_registered_boys }}</strong></td>
+                        <td><strong>{{ ns.total_registered_girls }}</strong></td>
+                        <td><strong>{{ ns.total_absent_boys }}</strong></td>
+                        <td><strong>{{ ns.total_absent_girls }}</strong></td>
+                    </tr>
+                    {% endif %}
+                    
+                    {# PERCENTAGE ROW (colspan first two columns, then colspan all remaining) #}
+                    {% if ns.total_registered_boys + ns.total_registered_girls > 0 %}
+                    {% set total_present = ns.total_present_boys + ns.total_present_girls %}
+                    {% set total_registered = ns.total_registered_boys + ns.total_registered_girls %}
+                    {% set percentage = (total_present / total_registered * 100) | round(2) %}
+                    <tr class="percentage-row">
+                        <td colspan="2"><strong>Percentage (%) of present</strong></td>
+                        <td colspan="10"><strong>{{ percentage }}%</strong></td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. FOOD REPORT -->
+        <div class="section">
+            <div class="section-title">3. Food Report</div>
+            <div class="sub-section">COOKING</div>
+            <div class="question-grid">
+                <span class="question-label">Was the food prepared and cooked today? ................................</span><span class="answer">{{ food_cooked }}</span>
+                {% if food_cooked == 'yes' %}
+                    <span class="question-label">What was the quality of food cooked? .............................:</span><span class="answer">{{ food_condition }}</span>
+                    {% if food_condition == 'bad' %}<span class="question-label">Action taken:</span><span class="answer">{{ food_bad_action }}</span>{% endif %}
+                    <span class="question-label">Were all the required ingredients available? ...............................</span><span class="answer">{{ ingredients_available }}</span>
+                    {% if ingredients_available == 'no' %}<span class="question-label">Missing ingredients:</span><span class="answer">{{ missing_ingredients }}</span>{% endif %}
+                    <span class="question-label">Was the cooking done on time as scheduled? ................................</span><span class="answer">{{ cooking_on_time }}</span>
+                    {% if cooking_on_time == 'no' %}<span class="question-label">Delay reason:</span><span class="answer">{{ cooking_delay_reason }}</span>{% endif %}
+                {% elif food_cooked == 'no' %}
+                    <span class="question-label">Why not cooked?</span><span class="answer">{{ no_food_reason }}</span>
+                {% endif %}
+            </div>
+            <div class="sub-section">HYGENE & SAFETY OF FOOD</div>
+            <div class="question-grid">
+                <span class="question-label">Was the cooking area maintained in a clean and hygienic condition? .........................................</span><span class="answer">{{ area_clean }}</span>
+                <span class="question-label">Was the food properly covered and protected from contamination? ............................................</span><span class="answer">{{ food_covered }}</span>
+            </div>
+            <div class="sub-section">DISTRIBUTION & MANAGEMENT</div>
+            <div class="question-grid">
+                <span class="question-label">Was the food served on time as scheduled? ........................................</span><span class="answer">{{ served_on_time }}</span>
+                <span class="question-label">Was the food sufficient for all students?.........................................</span><span class="answer">{{ food_enough }}</span>
+                {% if food_enough == 'no' %}<span class="question-label">Action taken:</span><span class="answer">{{ not_enough_action }}</span>{% endif %}
+                <span class="question-label">Did any student miss receiving food? .............................................</span><span class="answer">{{ student_miss }}</span>
+                {% if student_miss == 'yes' %}<span class="question-label">Reason:</span><span class="answer">{{ miss_food_reason }}</span>{% endif %}
+            </div>
+            <div class="sub-section">SUPERVISION</div>
+            <div class="question-grid">
+                <span class="question-label">Was a teacher present during the serving of food? ................................</span><span class="answer">{{ teacher_serving }}</span>
+                <span class="question-label">Did the teacher check and confirm the quality of the food before serving? ........</span><span class="answer">{{ teacher_quality }}</span>
+            </div>
+        </div>
+
+        <!-- 4. EVENTS -->
+        <div class="section">
+            <div class="section-title">4. Events</div>
+            <div class="question-grid">
+                <span class="question-label">Special events:</span><span class="answer">{{ events }}</span>
+            </div>
+        </div>
+
+        <!-- 5. EVENING ACTIVITIES -->
+        <div class="section">
+            <div class="section-title">5. Evening Activities</div>
+            <div class="answer">{{ evening_activities }}</div>
+        </div>
+
+        <!-- 6. SECURITY REPORT -->
+        <div class="section">
+            <div class="section-title">6. Security Report</div>
+            <div class="answer">{{ security_report }}</div>
+        </div>
+
+        <!-- 7. GENERAL COMMENTS & T.O.D SIGNATURE -->
+        <div class="section">
+            <div class="section-title">7. General Comments & T.O.D Signature</div>
+            <div class="question-grid">
+                <span class="question-label">Challenges:</span><span class="answer">{{ challenges }}</span>
+                <span class="question-label">Suggestions:</span><span class="answer">{{ suggestions }}</span>
+                <span class="question-label">T.O.D Comments:</span><span class="answer">{{ tod_comments }}</span>
+            </div>
+            <div style="margin-top: 20px;"><div class="signature-line">T.O.D Signature</div></div>
+        </div>
+
+        <!-- 8. HEAD OF SCHOOL COMMENTS & SIGNATURE (blank for manual) -->
+        <div class="section">
+            <div class="section-title">8. Head of School Comments & Signature</div>
+            <div class="blank-lines">
+.......................................................................................................................................................
+.......................................................................................................................................................<br>
+            </div>
+            <div style="margin-top: 30px;"><div class="signature-line">Head of School Signature</div></div>
+        </div>
+    </div>
+    <footer>Report generated on {{ generation_date }}</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,633 @@
+{% extends "base2.html" %}
+
+{% block title %}Marks Entry | KIBINDU{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Jedwali lenye row lines (bottom border) */
+    .marks-table-card table {
+        background-color: white;
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0;
+    }
+    .marks-table-card th,
+    .marks-table-card td {
+        border-bottom: 1px solid #dee2e6;
+        padding: 12px 8px;
+        text-align: left;
+        font-size: small;
+        vertical-align: middle;
+    }
+    .marks-table-card thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+    .mark-input {
+        width: 80px;
+        text-align: center;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    .mark-input:disabled {
+        background-color: #f0f0f0;
+        cursor: not-allowed;
+    }
+    .error-text {
+        display: block;
+        color: red;
+        font-size: 12px;
+        margin-top: 4px;
+        text-align: center;
+    }
+    .marks-table-card {
+        border-top: 4px solid #28a745;
+        border-radius: 12px 12px 0 0;
+        overflow-x: auto;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-top: 20px;
+        background-color: white;
+    }
+    #floatingKeyboard {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        padding: 10px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        z-index: 9999;
+        display: none;
+    }
+    .keyboard-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+    }
+    .key {
+        flex: 0 0 60px;
+        height: 40px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        background: #f2f2f2;
+        cursor: pointer;
+    }
+    .key.ok { background: #2ecc71; color: white; }
+    .key.back { background: #e74c3c; color: white; }
+    .key.focus-back { background: #f39c12; color: white; }
+    .marks_menu {
+        position: relative;
+        display: inline-block;
+        margin-top: 10px;
+    }
+    #marks_menuBtn {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    #marks_menuBtn:hover { background-color: #2980b9; }
+    #marks_dropdownMenu {
+        position: absolute;
+        top: 110%;
+        left: 0;
+        background-color: white;
+        min-width: 160px;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    }
+    #marks_dropdownMenu.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    #marks_dropdownMenu a {
+        display: block;
+        padding: 8px 16px;
+        text-decoration: none;
+        color: #2c3e50;
+        font-size: 14px;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    #marks_dropdownMenu a:hover { background-color: #f8f9fa; color: #3498db; }
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>Marks Entry</h2>
+
+    <div class="keyboard-toggle">
+        <label><input type="checkbox" id="toggleKeyboard"> ON / OFF</label>
+    </div>
+
+    <div id="floatingKeyboard">
+        <div class="keyboard-buttons">
+            <button class="key">1</button><button class="key">2</button><button class="key">3</button>
+            <button class="key">4</button><button class="key">5</button><button class="key">6</button>
+            <button class="key">7</button><button class="key">8</button><button class="key">9</button>
+            <button class="key">.</button><button class="key">0</button>
+            <button class="key back">⌫</button>
+            <button class="key ok">OK</button>
+            <button class="key focus-back">◀︎</button>
+        </div>
+    </div>
+
+    <!-- Fomu la kuchagua vigezo (inajumuisha 'all') -->
+    <form method="get" action="{{ url_for('marks_entry') }}" class="row g-3 mb-4" id="filterForm">
+        <div class="col-md-3">
+            <label for="formSelect" class="form-label">Kidato</label>
+            <select name="form" id="formSelect" class="form-select">
+                {% for f in forms %}
+                <option value="{{ f }}" {% if f == selected_form %}selected{% endif %}>{{ f|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="subjectSelect" class="form-label">Somo</label>
+            <select name="subject" id="subjectSelect" class="form-select">
+                {% for s in subjects %}
+                <option value="{{ s }}" {% if s == selected_subject %}selected{% endif %}>{{ s|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="examTypeSelect" class="form-label">Aina ya Mtihani</label>
+            <select name="exam_type_id" id="examTypeSelect" class="form-select">
+                {% for e in exam_types %}
+                <option value="{{ e.id }}" {% if e.id == selected_exam_type_id %}selected{% endif %}>{{ e.exam_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="yearSelect" class="form-label">Mwaka</label>
+            <select name="year" id="yearSelect" class="form-select">
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="termSelect" class="form-label">Muhula</label>
+            <select name="term" id="termSelect" class="form-select">
+                {% for t in terms %}
+                <option value="{{ t }}" {% if t == selected_term %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-12 mt-2">
+            <button type="submit" class="btn btn-primary">Chuja</button>
+        </div>
+    </form>
+
+    {% if warning %}
+    <div class="alert-warning">{{ warning }}</div>
+    {% endif %}
+
+    <!-- Jedwali la alama -->
+    <div class="marks-table-card">
+        <table>
+            <thead>
+                <tr><th>#</th><th style="text-align: left;">Student Name</th><th>Sex</th><th>Marks</th></tr>
+            </thead>
+            <tbody id="marksBody">
+                {% if rows %}
+                    {% for row in rows %}
+                    <tr>
+                        <td>{{ row.student_id }}</td>
+                        <td style="text-align: left;">{{ row.student_name }}</td>
+                        <td>{{ row.sex or '' }}</td>
+                        <td>
+                            <input type="number" class="mark-input" value="{{ row.marks if row.marks is not none else '' }}" 
+                                   min="0" max="100" step="1" 
+                                   data-student-id="{{ row.student_id }}" 
+                                   data-exam-reg-id="{{ row.exam_registration_id }}">
+                            <span class="error-text"></span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="4" class="text-center text-muted">Hakuna wanafunzi au tafadhali chagua vigezo maalum.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- marks_menu -->
+    <div class="marks_menu mt-3">
+        <div class="student-stats">
+            <span>Progress: 
+                <span id="liveMarksCount">{{ rows|selectattr('marks', 'defined')|selectattr('marks', '!=', '')|list|length }}</span>/{{ rows|length }}
+            </span>
+        </div>
+        <button id="marks_menuBtn">Complete</button>
+        <div id="marks_dropdownMenu">
+            <a href="#" id="saveMarks">Save marks</a>
+            <a href="#" id="createFile">Create file</a>
+            <a href="#" id="analyseMarks">Analyse marks</a>
+        </div>
+    </div>
+<div id="spinner" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 10px; color: white; text-align: center;">
+    <div class="spinner-border text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Subiri...</p>
+</div>    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function() {
+        // ---------- FLOATING KEYBOARD ----------
+        const toggle = document.getElementById('toggleKeyboard');
+        const keyboard = document.getElementById('floatingKeyboard');
+        let activeInput = null;
+        if (toggle) {
+            toggle.addEventListener('change', function() {
+                keyboard.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+        document.addEventListener('focusin', function(e) {
+            if (e.target.classList.contains('mark-input') && !e.target.disabled) {
+                activeInput = e.target;
+                activeInput.select();
+            }
+        });
+        if (keyboard) {
+            keyboard.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const key = e.target.closest('.key');
+                if (!key || !activeInput) return;
+                const value = key.innerText.trim();
+                if (key.classList.contains('ok')) {
+                    const inputs = Array.from(document.querySelectorAll('.mark-input:not([disabled])'));
+                    const idx = inputs.indexOf(activeInput);
+                    if (idx !== -1 && idx + 1 < inputs.length) inputs[idx + 1].focus();
+                    return;
+                }
+                if (key.classList.contains('back')) {
+                    activeInput.value = activeInput.value.slice(0, -1);
+                    const evt = new Event('input', { bubbles: true });
+                    activeInput.dispatchEvent(evt);
+                    return;
+                }
+                if (key.classList.contains('focus-back')) {
+                    const inputs = Array.from(document.querySelectorAll('.mark-input:not([disabled])'));
+                    const idx = inputs.indexOf(activeInput);
+                    if (idx > 0) inputs[idx - 1].focus();
+                    return;
+                }
+                if (value === '.') {
+                    if (activeInput.value.includes('.')) return;
+                    activeInput.value += '.';
+                } else {
+                    activeInput.value += value;
+                }
+                const val = activeInput.value.trim();
+                if (val === '100' || (/^\d{2}$/.test(val) && Number(val) < 100)) {
+                    const inputs = Array.from(document.querySelectorAll('.mark-input:not([disabled])'));
+                    const idx = inputs.indexOf(activeInput);
+                    if (idx !== -1 && idx + 1 < inputs.length) inputs[idx + 1].focus();
+                } else {
+                    const evt = new Event('input', { bubbles: true });
+                    activeInput.dispatchEvent(evt);
+                }
+            });
+        }
+
+        // ---------- VALIDATION ----------
+        function validateMark(input) {
+            const val = input.value.trim();
+            const errorSpan = input.parentElement.querySelector('.error-text');
+            if (!errorSpan) return true;
+            if (val === '') {
+                errorSpan.textContent = '';
+                input.style.borderColor = '#ccc';
+                return true;
+            }
+            const num = Number(val);
+            if (isNaN(num) || num < 0 || num > 100) {
+                errorSpan.textContent = 'Alama lazima iwe 0-100';
+                input.style.borderColor = '#e74c3c';
+                return false;
+            } else {
+                errorSpan.textContent = '';
+                input.style.borderColor = '#2ecc71';
+                return true;
+            }
+        }
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('mark-input')) {
+                validateMark(e.target);
+                updateLiveCount();
+            }
+        });
+
+        // ---------- NAVIGATION ----------
+        document.addEventListener('keydown', function(e) {
+            const active = document.activeElement;
+            if (!active.classList || !active.classList.contains('mark-input') || active.disabled) return;
+            const inputs = Array.from(document.querySelectorAll('.mark-input:not([disabled])'));
+            const idx = inputs.indexOf(active);
+            if (e.key === 'Enter' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (idx + 1 < inputs.length) inputs[idx + 1].focus();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (idx > 0) inputs[idx - 1].focus();
+            }
+        });
+
+        // ---------- DISABLE MARKS IF 'all' SELECTED ----------
+        function isAnyAllSelected() {
+            const form = document.getElementById('formSelect').value;
+            const subject = document.getElementById('subjectSelect').value;
+            const exam = document.getElementById('examTypeSelect').value;
+            return (form === 'all' || subject === 'all' || exam === 'all');
+        }
+        function disableMarksInputs(disabled) {
+            document.querySelectorAll('.mark-input').forEach(inp => {
+                inp.disabled = disabled;
+                if (disabled) inp.style.backgroundColor = '#f0f0f0';
+                else inp.style.backgroundColor = '';
+            });
+        }
+        function showAllAlert() {
+            alert("⚠️ Tafadhali chagua KIDATO, SOMO na AINA YA MTIHANI maalum kabla ya kuingiza au kuhifadhi alama.");
+        }
+        document.querySelectorAll('#formSelect, #subjectSelect, #examTypeSelect').forEach(sel => {
+            sel.addEventListener('change', function() {
+                if (isAnyAllSelected()) {
+                    disableMarksInputs(true);
+                    showAllAlert();
+                } else {
+                    disableMarksInputs(false);
+                }
+            });
+        });
+        if (isAnyAllSelected()) {
+            disableMarksInputs(true);
+        } else {
+            disableMarksInputs(false);
+        }
+
+        // ---------- UPDATE PROGRESS COUNT ----------
+        function updateLiveCount() {
+            const inputs = document.querySelectorAll('#marksBody .mark-input');
+            let filled = 0;
+            inputs.forEach(inp => {
+                if (inp.value.trim() !== '') filled++;
+            });
+            const span = document.getElementById('liveMarksCount');
+            if (span) span.innerText = filled;
+        }
+        updateLiveCount();
+
+        // ---------- DROPDOWN MENU ----------
+        const menuBtn = document.getElementById('marks_menuBtn');
+        const dropdown = document.getElementById('marks_dropdownMenu');
+        if (menuBtn && dropdown) {
+            menuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+            document.addEventListener('click', function(e) {
+                if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // ---------- SAVE MARKS ----------
+document.getElementById('saveMarks')?.addEventListener('click', async function(e) {
+    e.preventDefault();
+    
+    // Kama kuna 'all' katika kidato, somo au aina ya mtihani – kataa
+    if (isAnyAllSelected()) {
+        showAllAlert();
+        return;
+    }
+
+    // Kusanya alama kutoka kwenye jedwali
+    const rows = document.querySelectorAll('#marksBody tr');
+    const marksPayload = [];
+    let hasError = false;
+
+    rows.forEach(row => {
+        const input = row.querySelector('.mark-input');
+        if (!input) return;
+        const student_id = input.dataset.studentId;
+        const marks = input.value.trim() === '' ? null : parseFloat(input.value);
+        
+        if (marks !== null && (isNaN(marks) || marks < 0 || marks > 100)) {
+            hasError = true;
+            const errSpan = input.parentElement.querySelector('.error-text');
+            if (errSpan) errSpan.textContent = 'Alama lazima iwe 0-100';
+            return;
+        }
+        marksPayload.push({ student_id: parseInt(student_id), marks: marks });
+    });
+
+    if (hasError) {
+        alert('Tafadhali sahihisha makosa kwenye alama.');
+        return;
+    }
+
+    const payload = {
+        form: document.getElementById('formSelect').value,
+        subject: document.getElementById('subjectSelect').value,
+        exam_type_id: document.getElementById('examTypeSelect').value,
+        year: parseInt(document.getElementById('yearSelect').value),
+        term: parseInt(document.getElementById('termSelect').value),
+        marks: marksPayload
+    };
+
+    // Onyesha spinner na zima kitufe
+    showSpinner(true);
+    this.disabled = true;
+
+    try {
+        const response = await fetch('/save-marks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            alert('✅ Alama zimehifadhiwa kikamilifu.');
+            location.reload();  // Onyesha mabadiliko mara moja
+        } else {
+            alert('❌ Hitilafu: ' + (data.message || 'Jaribu tena'));
+        }
+    } catch (err) {
+        alert('❌ Kosa la mawasiliano: ' + err.message);
+    } finally {
+        showSpinner(false);
+        this.disabled = false;
+    }
+});
+      // ---------- CREATE EXCEL FILE ----------
+document.getElementById('createFile')?.addEventListener('click', async function(e) {
+    e.preventDefault();
+    
+    if (isAnyAllSelected()) {
+        showAllAlert();
+        return;
+    }
+
+    // Kusanya data ya alama
+    const rows = document.querySelectorAll('#marksBody tr');
+    const excelData = [];
+    
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 4) return;
+        const markInput = cells[3].querySelector('.mark-input');
+        if (!markInput) return;
+        const markValue = markInput.value.trim();
+        
+        
+        excelData.push({
+            Serial: cells[0].innerText.trim(),
+            Name: cells[1].innerText.trim(),
+            Sex: cells[2].innerText.trim(),
+            Marks: markValue
+        });
+    });
+
+    if (excelData.length === 0) {
+        alert('⚠️ Hakuna alama za kuweka kwenye faili.');
+        
+    }
+
+    // Pata taarifa za somo, aina ya mtihani, mwaka, na KIDATO
+    const subject = document.getElementById('subjectSelect').value;
+    const examTypeSelect = document.getElementById('examTypeSelect');
+    const examTypeName = examTypeSelect.options[examTypeSelect.selectedIndex]?.text || '';
+    const year = document.getElementById('yearSelect').value;
+    const form = document.getElementById('formSelect').value;   // <--- Ongeza hii
+
+    showSpinner(true);
+    this.disabled = true;
+
+    try {
+        console.log('Excel data being sent:', excelData);
+        const response = await fetch('/create-excel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                data: excelData,
+                subject: subject,
+                exam_type: examTypeName,
+                year: year,
+                form: form            // <--- Ongeza hii
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server error: ${errorText.substring(0, 100)}`);
+        }
+        
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Marks_${form}_${subject}_${examTypeName}_${year}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert('✅ Faili limeundwa kikamilifu.');
+    } catch (err) {
+        alert('❌ Kosa: ' + err.message);
+    } finally {
+        showSpinner(false);
+        this.disabled = false;
+    }
+});
+        // ---------- ANALYSE MARKS ----------
+// Function ya kuonyesha/kuficha spinner
+function showSpinner(show) {
+    const spinner = document.getElementById('spinner');
+    if (spinner) spinner.style.display = show ? 'flex' : 'none';
+}
+
+// Badilisha event listener ya analyseMarks
+document.getElementById('analyseMarks')?.addEventListener('click', async function(e) {
+    e.preventDefault();
+    if (isAnyAllSelected()) {
+        showAllAlert();
+        return;
+    }
+    const payload = {
+        form: document.getElementById('formSelect').value,
+        subject: document.getElementById('subjectSelect').value,
+        exam_type_id: document.getElementById('examTypeSelect').value,
+        year: parseInt(document.getElementById('yearSelect').value),
+        term: parseInt(document.getElementById('termSelect').value)
+    };
+    // Onyesha spinner na zima kitufe
+    showSpinner(true);
+    const btn = this;
+    btn.disabled = true;
+    try {
+        const response = await fetch('/analyse-marks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (err) {
+            throw new Error(`Server imerudisha: ${text.substring(0, 200)}`);
+        }
+        if (!response.ok) throw new Error(data.message || 'Hitilafu');
+        if (data.status === 'success') {
+            const a = data.analysis;
+            const totalWeight = (a.A * 1) + (a.B * 2) + (a.C * 3) + (a.D * 4) + (a.F * 5);
+            const gpa = totalWeight / a.total_students;    
+            alert(`📊 UCHAMBUZI WA ALAMA\n\nWanafunzi wenye alama: ${a.total_students}\nWastani: ${a.average}\nAlama ya juu: ${a.max}\nAlama ya chini: ${a.min}\nIdadi ya A = ${a.A}\nIdadi ya B = ${a.B}\nIdadi ya C = ${a.C}\nIdadi ya D = ${a.D}\nIdadi ya F = ${a.F}\nGPA = ${gpa.toFixed(2)}`);
+        } else {
+            alert('Hitilafu: ' + data.message);
+        }
+    } catch (err) {
+        alert('Kosa la uchambuzi: ' + err.message);
+    } finally {
+        showSpinner(false);
+        btn.disabled = false;
+    }
+});
+    })();
+</script>
+{% endblock %}
