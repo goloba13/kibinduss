@@ -1,67 +1,214 @@
 {% extends "academic_base.html" %}
+{% block title %}System{% endblock %}
+{% block extra_css %}
+<style>
+    .usage-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+    .usage-header {
+        margin-bottom: 2rem;
+    }
+    .usage-header h2 {
+        color: #1e4a3d;
+        font-weight: 700;
+        border-left: 5px solid #1e4a3d;
+        padding-left: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .usage-header p {
+        color: #4a5568;
+        margin-left: 1.2rem;
+    }
+    .stats-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        flex: 1;
+        min-width: 280px;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02);
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 30px -12px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        padding: 1rem 1.5rem;
+        color: white;
+        font-weight: 600;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+    .card-header i {
+        font-size: 1.4rem;
+    }
+    .db-header { background: linear-gradient(135deg, #1e4a3d, #0f2c23); }
+    .storage-header { background: linear-gradient(135deg, #0f5b8c, #083c5e); }
+    .card-body {
+        padding: 1.5rem;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+    .metric-label {
+        color: #718096;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 1rem;
+    }
+    .progress-wrapper {
+        margin: 1rem 0;
+    }
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        margin-bottom: 0.3rem;
+        color: #4a5568;
+    }
+    .progress {
+        background-color: #edf2f7;
+        border-radius: 999px;
+        height: 12px;
+        overflow: hidden;
+    }
+    .progress-bar {
+        border-radius: 999px;
+        height: 100%;
+        width: 0%;
+        transition: width 0.5s ease;
+    }
+    .progress-bar.success { background-color: #48bb78; }
+    .progress-bar.warning { background-color: #ecc94b; }
+    .progress-bar.danger { background-color: #f56565; }
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+    .status-success {
+        background-color: #c6f6d5;
+        color: #22543d;
+    }
+    .status-danger {
+        background-color: #fed7d7;
+        color: #9b2c2c;
+    }
+    .info-alert {
+        background: #ebf8ff;
+        border-left: 4px solid #3182ce;
+        border-radius: 16px;
+        padding: 1rem 1.5rem;
+        margin-top: 1rem;
+        color: #2c5282;
+        font-size: 0.9rem;
+    }
+    .info-alert i {
+        margin-right: 8px;
+    }
+    @media (max-width: 680px) {
+        .usage-container { padding: 1rem; }
+        .metric-value { font-size: 1.5rem; }
+        .card-header { padding: 0.75rem 1rem; font-size: 1rem; }
+    }
+</style>
+{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <h2>Matumizi ya Supabase (Free Tier)</h2>
+<div class="usage-container">
+    <div class="usage-header">
+        <h2>📊 Matumizi ya Database (Free Tier)</h2>
+        <p>Ukadiriaji wa database na storage — vikomo: <strong>500 MB</strong> (DB) na <strong>1 GB</strong> (Storage).</p>
+    </div>
+
     {% if usage and usage.database and usage.storage %}
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">Database</div>
-                <div class="card-body">
-                    <p>Matumizi: <strong>{{ usage.database.used_mb|default(0) }} MB</strong> / {{ usage.database.limit_mb|default(500) }} MB</p>
+    <div class="stats-grid">
+        <!-- Database Card -->
+        <div class="stat-card">
+            <div class="card-header db-header">
+                <i>🗄️</i> <span>Database</span>
+            </div>
+            <div class="card-body">
+                <div class="metric-value">{{ "%.2f"|format(usage.database.used_mb|default(0)) }} MB</div>
+                <div class="metric-label">kati ya {{ usage.database.limit_mb|default(500) }} MB</div>
+                <div class="progress-wrapper">
+                    <div class="progress-label">
+                        <span>Matumizi</span>
+                        <span>{{ "%.1f"|format(usage.database.used_percent|default(0)) }}%</span>
+                    </div>
                     <div class="progress">
                         {% set db_percent = usage.database.used_percent|default(0) %}
-                        <div class="progress-bar 
-                                    {% if db_percent > 90 %}bg-danger
-                                    {% elif db_percent > 70 %}bg-warning
-                                    {% else %}bg-success{% endif %}" 
-                             style="width: {{ db_percent }}%;">
-                            {{ db_percent }}%
+                        <div class="progress-bar
+                                    {% if db_percent > 90 %}danger
+                                    {% elif db_percent > 70 %}warning
+                                    {% else %}success{% endif %}"
+                             style="width: {{ db_percent if db_percent <= 100 else 100 }}%;">
                         </div>
                     </div>
-                    <p class="mt-2">
-                        {% if usage.summary and usage.summary.database_within_limit %}
-                            ✅ Ndani ya kikomo
-                        {% else %}
-                            ❌ Imefikia kikomo (safisha data)
-                        {% endif %}
-                    </p>
                 </div>
+                {% if usage.summary and usage.summary.database_within_limit %}
+                    <div class="status-badge status-success">✅ Ndani ya kikomo</div>
+                {% else %}
+                    <div class="status-badge status-danger">⚠️ Imefikia kikomo – Safisha data</div>
+                {% endif %}
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header bg-info text-white">Storage (Faili)</div>
-                <div class="card-body">
-                    <p>Matumizi: <strong>{{ usage.storage.used_mb|default(0) }} MB</strong> / {{ usage.storage.limit_mb|default(1024) }} MB</p>
+
+        <!-- Storage Card -->
+        <div class="stat-card">
+            <div class="card-header storage-header">
+                <i>📁</i> <span>Storage (Faili)</span>
+            </div>
+            <div class="card-body">
+                <div class="metric-value">{{ "%.2f"|format(usage.storage.used_mb|default(0)) }} MB</div>
+                <div class="metric-label">kati ya {{ usage.storage.limit_mb|default(1024) }} MB</div>
+                <div class="progress-wrapper">
+                    <div class="progress-label">
+                        <span>Matumizi</span>
+                        <span>{{ "%.1f"|format(usage.storage.used_percent|default(0)) }}%</span>
+                    </div>
                     <div class="progress">
                         {% set stor_percent = usage.storage.used_percent|default(0) %}
                         <div class="progress-bar
-                                    {% if stor_percent > 90 %}bg-danger
-                                    {% elif stor_percent > 70 %}bg-warning
-                                    {% else %}bg-success{% endif %}"
-                             style="width: {{ stor_percent }}%;">
-                            {{ stor_percent }}%
+                                    {% if stor_percent > 90 %}danger
+                                    {% elif stor_percent > 70 %}warning
+                                    {% else %}success{% endif %}"
+                             style="width: {{ stor_percent if stor_percent <= 100 else 100 }}%;">
                         </div>
                     </div>
-                    <p class="mt-2">
-                        {% if usage.summary and usage.summary.storage_within_limit %}
-                            ✅ Ndani ya kikomo
-                        {% else %}
-                            ❌ Imefikia kikomo
-                        {% endif %}
-                    </p>
                 </div>
+                {% if usage.summary and usage.summary.storage_within_limit %}
+                    <div class="status-badge status-success">✅ Ndani ya kikomo</div>
+                {% else %}
+                    <div class="status-badge status-danger">⚠️ Imefikia kikomo</div>
+                {% endif %}
             </div>
         </div>
     </div>
-    <div class="alert alert-info">
-        ⚠️ Vikomo vya Free Tier: Database 500 MB, Storage 1 GB, Bandwidth 5 GB/mwezi.<br>
-        Ukarasa huu unakadiria matumizi ya database na storage pekee. Bandwidth unahitaji kukadiria kwa kujirekodi mwenyewe.
+
+    <div class="info-alert">
+        <i>ℹ️</i> <strong>Kumbuka:</strong> Vikomo vya Free Tier: Database 500 MB, Storage 1 GB, Bandwidth 5 GB/mwezi.
+        Ukurasa huu unakadiria matumizi ya database na storage pekee. Bandwidth inahitaji kukadiria kwa kujirekodi mwenyewe (unaweza kuongeza jedwali la logs).
     </div>
     {% else %}
-    <div class="alert alert-danger">
-        ✖️ Hitilafu: Hakuna data ya matumizi. Hakikisha function ya Supabase imeundwa vizuri.
+    <div class="info-alert" style="background:#fff5f5; border-left-color:#e53e3e; color:#742a2a;">
+        <i>❌</i> Hitilafu: Hakuna data ya matumizi. Hakikisha function ya Supabase imeundwa vizuri na ina ruhusa za kusoma.
     </div>
     {% endif %}
 </div>

@@ -74,7 +74,7 @@
 }
 
 .student-class {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: #4a6a5e;
     margin: 0.25rem 0;
 }
@@ -93,7 +93,7 @@
     padding: 0.6rem 1.2rem;
     border-radius: 40px;
     color: #1e4a3d;
-    font-size: 1.3rem;
+    font-size: 0.9rem;
     margin-bottom: 1rem;
     display: inline-block;
 }
@@ -181,7 +181,7 @@ body {
             <thead>
                 <tr>
                     <th>Masomo</th>
-                    <th>Alama</th>
+                    <th>Marks</th>
                     <th>Grade</th>
                 </tr>
             </thead>
@@ -197,11 +197,11 @@ body {
         </table>
         <div class="summary">
  <div class="summary">
-    <p><strong>Jumla ya Alama:</strong> {{ exam.total_marks }}</p>
+    <p><strong>Jumla ya Marks:</strong> {{ exam.total_marks }}</p>
     <p><strong>Wastani:</strong> {{ exam.average }}</p>
-    <p><strong>Jumla ya Points:</strong> {{ exam.total_points if exam.total_points is not none else 'X' }}</p>
+    <p><strong>Point:</strong> {{ exam.total_points if exam.total_points is not none else 'X' }}</p>
     <p><strong>Division:</strong> {{ exam.division if exam.division is not none else 'X' }}</p>
-    <p><strong>Nafasi (Position):</strong> 
+    <p><strong>Nafasi (Position):</strong>
         {% if exam.position is not none %}
             {{ exam.position }} kati ya {{ exam.total_students }}
         {% else %}

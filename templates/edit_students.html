@@ -184,14 +184,14 @@
                     <td><input type="text" class="stream-input" value="{{ student.stream or '' }}" placeholder="e.g., A"></td>
                     <td><input type="tel" class="phone-input" value="{{ student.parent_phone or '' }}" placeholder="0712345678"></td>
                     <td>
-                        <button class="btn-edit" 
-                                data-id="{{ student.id }}" 
-                                data-name="{{ student.student_name }}" 
-                                data-class="{{ student.current_class }}" 
-                                data-sex="{{ student.sex or '' }}">✏️ Edit</button>
-                        <button class="btn-delete" 
-                                data-id="{{ student.id }}" 
-                                data-name="{{ student.student_name }}">🗑️ Futa</button>
+                        <button class="btn-edit"
+                                data-id="{{ student.id }}"
+                                data-name="{{ student.student_name }}"
+                                data-class="{{ student.current_class }}"
+                                data-sex="{{ student.sex or '' }}"><i class="fas fa-edit"></i></button>
+                        <button class="btn-delete"
+                                data-id="{{ student.id }}"
+                                data-name="{{ student.student_name }}"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -346,11 +346,11 @@
         document.getElementById('edit_class').value = className;
         editModal.classList.add('active');
     }
-    
+
     function closeEditModal() {
         editModal.classList.remove('active');
     }
-    
+
     function openDeleteModal(id, name) {
         if (!id || id === 'null') {
             alert("Hitilafu: Kitambulisho cha mwanafunzi hakipo. Tafadhali rejesha ukurasa.");
@@ -360,12 +360,12 @@
         document.getElementById('delete_name').innerText = name;
         deleteModal.classList.add('active');
     }
-    
+
     function closeDeleteModal() {
         deleteModal.classList.remove('active');
         currentDeleteId = null;
     }
-    
+
     // Delete using fetch
     async function confirmDelete() {
         if (!currentDeleteId) {
@@ -389,7 +389,7 @@
         }
         closeDeleteModal();
     }
-    
+
     // Attach edit buttons
     document.querySelectorAll('.btn-edit').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -404,7 +404,7 @@
             openEditModal(id, name, className, sex);
         });
     });
-    
+
     // Attach delete buttons with robust ID extraction
     document.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -421,7 +421,7 @@
             openDeleteModal(id, name);
         });
     });
-    
+
     // Handle edit form submission via AJAX (using 'sex' column)
     document.getElementById('editForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -429,7 +429,7 @@
         const student_name = document.getElementById('edit_name').value;
         const sex = document.getElementById('edit_sex').value;
         const current_class = document.getElementById('edit_class').value;
-        
+
         try {
             const response = await fetch(`/update-student/${id}`, {
                 method: 'POST',
@@ -458,15 +458,15 @@
             alert('Kosa la mtandao: ' + err.message);
         }
     });
-    
+
     // Close modals when clicking outside
     window.onclick = function(event) {
         if (event.target === editModal) closeEditModal();
         if (event.target === deleteModal) closeDeleteModal();
     };
-    
+
     document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
-    
+
     document.addEventListener('DOMContentLoaded', () => {
         setupEnterNavigation();
         document.getElementById('saveBtn').addEventListener('click', saveAllChanges);

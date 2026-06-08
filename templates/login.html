@@ -8,13 +8,13 @@
     </div>
 <div class="card">
     <h2 class="text-center">Kibindu secondary school</h2>
-    
+
     {% if error %}
         <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
             <i class="fas fa-exclamation-circle"></i> {{ error }}
         </div>
     {% endif %}
-    
+
     <form method="post">
         <div class="form-group">
             <label for="username"><i class="fas fa-user" style="margin-right: 8px;"></i>Username</label>
@@ -28,10 +28,10 @@
         </div>
         <button type="submit" class="btn"><i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i>Login</button>
     </form>
-    
+
     <div class="note">
-        <p>Tumia <a href="#" class="green-link"><strong>admin / admin</strong></a> kwa majaribio</p>
-        <p><a href="{{ url_for('index') }}" class="green-link">← Rudi kwenye ukurasa wa kuangalia matokeo</a></p>
+        <p> <a href="#" class="green-link"><strong></strong></a> Shule ya secondari Kibindu</p>
+        <p><a href="{{ url_for('index') }}" class="green-link">← Rudi kwenye ukurasa wa wazazi wa kuangalia matokeo</a></p>
     </div>
 </div>
 
@@ -47,7 +47,7 @@
         color: #555d02;      /* Kijani iliyokolea wakati wa kuelea */
         text-decoration: underline;
     }
-    /* Hakikisha maandishi mengine hayana rangi isiyotakiwa */
+
     .note p {
         color: #2c3e50;
     }
@@ -55,6 +55,10 @@
     color: #1e4a3d;
     border-bottom: 4px solid #1a522615;
     padding-left: 1rem;
+}
+.btn {
+    width: 150px;
+    height: 50px;
 }
 </style>
 

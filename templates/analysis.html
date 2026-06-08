@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uchambuzi wa Matokeo | KIBINDU</title>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -54,6 +53,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
+            border: none;
         }
         .filter-bar button:hover {
             background: #0f2c23;
@@ -105,6 +105,16 @@
             color: #6c757d;
             font-style: italic;
         }
+        .btn-export {
+            background: #28a745 !important;
+            color: white !important;
+            border: none;
+            border-radius: 12px;
+        }
+        .btn-export:disabled {
+            background: #6c757d !important;
+            cursor: not-allowed;
+        }
         @media (max-width: 768px) {
             th, td { padding: 0.4rem; font-size: 0.75rem; }
         }
@@ -133,25 +143,26 @@
             </select>
         </div>
         <div class="form-group">
-            <button id="loadBtn">🔍 View</button>
+            <button id="loadBtn">🔍 Chambua</button>
         </div>
-        <!-- Badilisha button ya export -->
-            <button id="exportBtn" class="btn-success" style="background:#28a745; color:white; border:none; border-radius:12px;" disabled>📥 Pakua Excel (Formatted)</button>        
+        <div class="form-group">
+            <button id="exportBtn" class="btn-export" disabled>📥 Pakua Excel</button>
         </div>
+    </div>
 
     <!-- Loading indicator -->
     <div id="loadingIndicator" class="loading" style="display: none;">Inapakia data, tafadhali subiri...</div>
 
-    <!-- Card 1: Subject statistics (with total_enrolled and absent) -->
+    <!-- Card 1: Subject statistics -->
     <div id="subjectStatsCard" class="card" style="display: none;">
         <h3>📊 Takwimu za Masomo (Waliosajiliwa na Watoro)</h3>
         <div class="table-responsive">
             <table id="subjectTable">
                 <thead>
                     <tr>
-                        <th>Subjects</th>
-                        <th>Reg</th>
-                        <th>Abs</th>
+                        <th>Somo</th>
+                        <th>Waliosajiliwa</th>
+                        <th>Watoro</th>
                         <th>A</th>
                         <th>B</th>
                         <th>C</th>
@@ -174,10 +185,10 @@
             <table id="bestTable">
                 <thead>
                     <tr>
-                        <th>Position</th>
-                        <th>Studnt name</th>
-                        <th>Point</th>
-                        <th>Division</th>
+                        <th>Nafasi</th>
+                        <th>Jina la Mwanafunzi</th>
+                        <th>Pointi</th>
+                        <th>Daraja</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -187,17 +198,17 @@
         </div>
     </div>
 
-    <!-- Card 3: Top 10 worst students (only those who sat for exam) -->
+    <!-- Card 3: Top 10 worst students -->
     <div id="topWorstCard" class="card" style="display: none;">
         <h3>⚠️ Wanafunzi 10 Waliofeli Zaidi (Waliopima tu)</h3>
         <div class="table-responsive">
             <table id="worstTable">
                 <thead>
                     <tr>
-                        <th>Position</th>
-                        <th>Student name</th>
+                        <th>Nafasi</th>
+                        <th>Jina la Mwanafunzi</th>
                         <th>Pointi</th>
-                        <th>Division</th>
+                        <th>Daraja</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -214,7 +225,7 @@
             <table id="divisionTable">
                 <thead>
                     <tr>
-                        <th>Sex</th>
+                        <th>Jinsia</th>
                         <th>I</th>
                         <th>II</th>
                         <th>III</th>
@@ -233,16 +244,138 @@
 </div>
 
 <script>
-    document.getElementById('loadBtn').addEventListener('click', async () => {
-        const examTypeId = document.getElementById('examTypeSelect').value;
-        const className = document.getElementById('classSelect').value;
+    // Hifadhi data ya uchambuzi wa sasa kwa ajili ya export
+    let currentAnalysisData = null;
+
+    // Vipengele vya DOM
+    const loadBtn = document.getElementById('loadBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const loadingDiv = document.getElementById('loadingIndicator');
+    const examTypeSelect = document.getElementById('examTypeSelect');
+    const classSelect = document.getElementById('classSelect');
+
+    // Kukataa kitufe cha export wakati wa kupakia
+    function disableExport(disabled = true) {
+        exportBtn.disabled = disabled;
+    }
+
+    // Onyesha kadi na data za masomo
+    function renderSubjectStats(data) {
+        const tbody = document.querySelector('#subjectTable tbody');
+        tbody.innerHTML = '';
+        if (data.subject_stats && data.subject_stats.length) {
+            data.subject_stats.forEach(subj => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerText = subj.subject;
+                row.insertCell(1).innerText = subj.total_enrolled ?? 0;
+                const absentCell = row.insertCell(2);
+                const absentCount = subj.absent ?? (subj.total_enrolled - (subj.count_A+subj.count_B+subj.count_C+subj.count_D+subj.count_F));
+                absentCell.innerHTML = `<span class="absent-badge">${absentCount}</span>`;
+                row.insertCell(3).innerText = subj.count_A;
+                row.insertCell(4).innerText = subj.count_B;
+                row.insertCell(5).innerText = subj.count_C;
+                row.insertCell(6).innerText = subj.count_D;
+                row.insertCell(7).innerText = subj.count_F;
+                row.insertCell(8).innerText = subj.gpa;
+            });
+            document.getElementById('subjectStatsCard').style.display = 'block';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-muted">Hakuna data ya masomo.</td></tr>';
+            document.getElementById('subjectStatsCard').style.display = 'block';
+        }
+    }
+
+    function renderBestStudents(data) {
+        const tbody = document.querySelector('#bestTable tbody');
+        tbody.innerHTML = '';
+        if (data.top_best && data.top_best.length) {
+            data.top_best.forEach(s => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerText = s.position;
+                row.insertCell(1).innerText = s.student_name;
+                row.insertCell(2).innerText = s.total_points;
+                row.insertCell(3).innerText = s.division;
+            });
+            document.getElementById('topBestCard').style.display = 'block';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-muted">Hakuna wanafunzi waliojitokeza.</td></tr>';
+            document.getElementById('topBestCard').style.display = 'block';
+        }
+    }
+
+    function renderWorstStudents(data) {
+        const tbody = document.querySelector('#worstTable tbody');
+        tbody.innerHTML = '';
+        if (data.top_worst && data.top_worst.length) {
+            data.top_worst.forEach(s => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerText = s.position;
+                row.insertCell(1).innerText = s.student_name;
+                row.insertCell(2).innerText = s.total_points;
+                row.insertCell(3).innerText = s.division;
+            });
+            document.getElementById('topWorstCard').style.display = 'block';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-muted">Hakuna data ya waliofeli.</td></tr>';
+            document.getElementById('topWorstCard').style.display = 'block';
+        }
+    }
+
+    function renderDivisionSummary(data) {
+        const tbody = document.querySelector('#divisionTable tbody');
+        tbody.innerHTML = '';
+        if (data.division_summary && data.division_summary.length) {
+            data.division_summary.forEach(row => {
+                const tr = tbody.insertRow();
+                let sexLabel = row.sex;
+                if (row.sex === 'M') sexLabel = 'Me (M)';
+                if (row.sex === 'F') sexLabel = 'Ke (F)';
+                tr.insertCell(0).innerText = sexLabel;
+                tr.insertCell(1).innerText = row.I;
+                tr.insertCell(2).innerText = row.II;
+                tr.insertCell(3).innerText = row.III;
+                tr.insertCell(4).innerText = row.IV;
+                tr.insertCell(5).innerText = row['0'];
+                tr.insertCell(6).innerText = row.Abs;
+                tr.insertCell(7).innerText = row.Total;
+            });
+            // Safu ya jumla
+            const totalRow = tbody.insertRow();
+            totalRow.style.fontWeight = 'bold';
+            totalRow.insertCell(0).innerText = 'Jumla';
+            const sums = data.division_summary.reduce((acc, r) => {
+                acc.I += r.I; acc.II += r.II; acc.III += r.III; acc.IV += r.IV;
+                acc['0'] += r['0']; acc.Abs += r.Abs; acc.Total += r.Total;
+                return acc;
+            }, {I:0, II:0, III:0, IV:0, '0':0, Abs:0, Total:0});
+            totalRow.insertCell(1).innerText = sums.I;
+            totalRow.insertCell(2).innerText = sums.II;
+            totalRow.insertCell(3).innerText = sums.III;
+            totalRow.insertCell(4).innerText = sums.IV;
+            totalRow.insertCell(5).innerText = sums['0'];
+            totalRow.insertCell(6).innerText = sums.Abs;
+            totalRow.insertCell(7).innerText = sums.Total;
+            document.getElementById('divisionCard').style.display = 'block';
+        } else {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-muted">Hakuna data ya divisions.</td></tr>';
+            document.getElementById('divisionCard').style.display = 'block';
+        }
+    }
+
+    // Ombi la kupakia data
+    loadBtn.addEventListener('click', async () => {
+        const examTypeId = examTypeSelect.value;
+        const className = classSelect.value;
         if (!examTypeId || !className) {
             alert('Tafadhali chagua aina ya mtihani na kidato.');
             return;
         }
 
-        // Show loading, hide cards
-        document.getElementById('loadingIndicator').style.display = 'block';
+        // Zima kitufe cha export wakati wa kupakia
+        disableExport(true);
+        loadingDiv.style.display = 'block';
+
+        // Ficha kadi zote
         document.getElementById('subjectStatsCard').style.display = 'none';
         document.getElementById('topBestCard').style.display = 'none';
         document.getElementById('topWorstCard').style.display = 'none';
@@ -257,166 +390,78 @@
             const data = await response.json();
             if (data.error) throw new Error(data.error);
 
-            // ========== 1. Subject statistics ==========
-            const subjectTbody = document.querySelector('#subjectTable tbody');
-            subjectTbody.innerHTML = '';
-            if (data.subject_stats && data.subject_stats.length > 0) {
-                data.subject_stats.forEach(subj => {
-                    const row = subjectTbody.insertRow();
-                    row.insertCell(0).innerText = subj.subject;
-                    row.insertCell(1).innerText = subj.total_enrolled ?? '?';
-                    const absentCell = row.insertCell(2);
-                    const absentCount = subj.absent ?? (subj.total_enrolled - (subj.count_A+subj.count_B+subj.count_C+subj.count_D+subj.count_F));
-                    absentCell.innerHTML = `<span class="absent-badge">${absentCount}</span>`;
-                    row.insertCell(3).innerText = subj.count_A;
-                    row.insertCell(4).innerText = subj.count_B;
-                    row.insertCell(5).innerText = subj.count_C;
-                    row.insertCell(6).innerText = subj.count_D;
-                    row.insertCell(7).innerText = subj.count_F;
-                    row.insertCell(8).innerText = subj.gpa;
-                });
-                document.getElementById('subjectStatsCard').style.display = 'block';
-            } else {
-                subjectTbody.innerHTML = '<tr><td colspan="9" class="text-muted">Hakuna data ya masomo.</td></tr>';
-                document.getElementById('subjectStatsCard').style.display = 'block';
-            }
+            currentAnalysisData = data; // hifadhi kwa export
+            renderSubjectStats(data);
+            renderBestStudents(data);
+            renderWorstStudents(data);
+            renderDivisionSummary(data);
 
-            // ========== 2. Top 10 best ==========
-            const bestTbody = document.querySelector('#bestTable tbody');
-            bestTbody.innerHTML = '';
-            if (data.top_best && data.top_best.length > 0) {
-                data.top_best.forEach(s => {
-                    const row = bestTbody.insertRow();
-                    row.insertCell(0).innerText = s.position;
-                    row.insertCell(1).innerText = s.student_name;
-                    row.insertCell(2).innerText = s.total_points;
-                    row.insertCell(3).innerText = s.division;
-                });
-                document.getElementById('topBestCard').style.display = 'block';
-            } else {
-                bestTbody.innerHTML = '<tr><td colspan="4" class="text-muted">Hakuna wanafunzi waliojitokeza.</td></tr>';
-                document.getElementById('topBestCard').style.display = 'block';
-            }
-
-            // ========== 3. Top 10 worst ==========
-            const worstTbody = document.querySelector('#worstTable tbody');
-            worstTbody.innerHTML = '';
-            if (data.top_worst && data.top_worst.length > 0) {
-                data.top_worst.forEach(s => {
-                    const row = worstTbody.insertRow();
-                    row.insertCell(0).innerText = s.position;
-                    row.insertCell(1).innerText = s.student_name;
-                    row.insertCell(2).innerText = s.total_points;
-                    row.insertCell(3).innerText = s.division;
-                });
-                document.getElementById('topWorstCard').style.display = 'block';
-            } else {
-                worstTbody.innerHTML = '<tr><td colspan="4" class="text-muted">Hakuna data ya waliofeli.</td></tr>';
-                document.getElementById('topWorstCard').style.display = 'block';
-            }
-
-            // ========== 4. Division summary by sex ==========
-            const divisionTbody = document.querySelector('#divisionTable tbody');
-            divisionTbody.innerHTML = '';
-            if (data.division_summary && data.division_summary.length > 0) {
-                data.division_summary.forEach(row => {
-                    const tr = divisionTbody.insertRow();
-                    // Badilisha jina la jinsia inavyotakikana
-                    let sexLabel = row.sex;
-                    if (row.sex === 'M') sexLabel = 'Me (M)';
-                    if (row.sex === 'F') sexLabel = 'Ke (F)';
-                    tr.insertCell(0).innerText = sexLabel;
-                    tr.insertCell(1).innerText = row.I;
-                    tr.insertCell(2).innerText = row.II;
-                    tr.insertCell(3).innerText = row.III;
-                    tr.insertCell(4).innerText = row.IV;
-                    tr.insertCell(5).innerText = row['0'];
-                    tr.insertCell(6).innerText = row.Abs;
-                    tr.insertCell(7).innerText = row.Total;
-                });
-                // Ongeza safu ya Jumla
-                const totalRow = divisionTbody.insertRow();
-                totalRow.style.fontWeight = 'bold';
-                totalRow.insertCell(0).innerText = 'Jumla';
-                const sums = data.division_summary.reduce((acc, r) => {
-                    acc.I += r.I; acc.II += r.II; acc.III += r.III; acc.IV += r.IV;
-                    acc['0'] += r['0']; acc.Abs += r.Abs; acc.Total += r.Total;
-                    return acc;
-                }, {I:0, II:0, III:0, IV:0, '0':0, Abs:0, Total:0});
-                totalRow.insertCell(1).innerText = sums.I;
-                totalRow.insertCell(2).innerText = sums.II;
-                totalRow.insertCell(3).innerText = sums.III;
-                totalRow.insertCell(4).innerText = sums.IV;
-                totalRow.insertCell(5).innerText = sums['0'];
-                totalRow.insertCell(6).innerText = sums.Abs;
-                totalRow.insertCell(7).innerText = sums.Total;
-                
-                document.getElementById('divisionCard').style.display = 'block';
-            } else {
-                divisionTbody.innerHTML = '<tr><td colspan="8" class="text-muted">Hakuna data ya divisions.</td></tr>';
-                document.getElementById('divisionCard').style.display = 'block';
-            }
-
+            // Wezesha kitufe cha export baada ya data kuonyeshwa
+            disableExport(false);
         } catch (err) {
             alert('Hitilafu: ' + err.message);
+            disableExport(true);
         } finally {
-            document.getElementById('loadingIndicator').style.display = 'none';
+            loadingDiv.style.display = 'none';
         }
     });
-document.getElementById('exportBtn').addEventListener('click', async () => {
-    const examTypeId = document.getElementById('examTypeSelect').value;
-    const className = document.getElementById('classSelect').value;
-    const examName = document.getElementById('examTypeSelect').options[document.getElementById('examTypeSelect').selectedIndex]?.text || 'Mtihani';
-    
-    if (!examTypeId || !className) {
-        alert('Tafadhali chagua aina ya mtihani na kidato kwanza.');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/export-analysis', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                exam_type_id: examTypeId, 
-                class: className,
-                exam_name: examName
-            })
-        });
-        
-        // Kama kuna kosa la server (500, 400), majibu yatakuwa JSON
-        if (!response.ok) {
-            const errorText = await response.text();
-            let errorMsg = 'Kosa la server';
-            try {
-                const errorJson = JSON.parse(errorText);
-                errorMsg = errorJson.error || errorMsg;
-            } catch(e) {}
-            alert('Hitilafu: ' + errorMsg);
+
+    // Kitufe cha export
+    exportBtn.addEventListener('click', async () => {
+        const examTypeId = examTypeSelect.value;
+        const className = classSelect.value;
+        const examName = examTypeSelect.options[examTypeSelect.selectedIndex]?.text || 'Mtihani';
+
+        if (!examTypeId || !className) {
+            alert('Tafadhali chagua aina ya mtihani na kidato kwanza.');
             return;
         }
-        
-        // Kama ni faili ya Excel, pakua
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        // Jina la faili kutoka header au tengeneza la kawaida
-        const contentDisposition = response.headers.get('Content-Disposition');
-        let filename = `Uchambuzi_${className}_${examName}.xlsx`;
-        if (contentDisposition && contentDisposition.includes('filename=')) {
-            filename = contentDisposition.split('filename=')[1].replace(/"/g, '');
-        }
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-    } catch (err) {
-        alert('Kosa la mtandao: ' + err.message);
-    }
-});
-</script>
 
+        if (!currentAnalysisData) {
+            alert('Hakuna data ya kuexport. Bonyeza "Chambua" kwanza.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/export-analysis', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    exam_type_id: examTypeId,
+                    class: className,
+                    exam_name: examName
+                })
+            });
+
+            if (!response.ok) {
+                let errorMsg = 'Kosa la server';
+                try {
+                    const errorJson = await response.json();
+                    errorMsg = errorJson.error || errorMsg;
+                } catch(e) {}
+                alert('Hitilafu: ' + errorMsg);
+                return;
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            // Jina la faili kutoka header au default
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = `Uchambuzi_${className}_${examName}.xlsx`;
+            if (contentDisposition && contentDisposition.includes('filename=')) {
+                filename = contentDisposition.split('filename=')[1].replace(/"/g, '');
+            }
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            alert('Kosa la mtandao: ' + err.message);
+        }
+    });
+</script>
 </body>
 </html>

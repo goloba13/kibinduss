@@ -1,0 +1,126 @@
+<!-- Content Header -->
+<div class="content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="m-0">Mhasibu</h1>
+        <div class="text-muted">
+            Tarehe: <b id="currentDate"></b>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<div class="container-fluid">
+    <!-- Small boxes (statistics) -->
+    <div class="row">
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>45,500,000</h3>
+                    <p>Jumla ya Mapato (TZS)</p>
+                </div>
+                <div class="icon"><i class="fas fa-coins"></i></div>
+                <a href="#" class="small-box-footer">Maelezo zaidi <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>12,800,000</h3>
+                    <p>Matumizi (TZS)</p>
+                </div>
+                <div class="icon"><i class="fas fa-receipt"></i></div>
+                <a href="#" class="small-box-footer">Maelezo zaidi <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>156</h3>
+                    <p>Wanafunzi waliolipia</p>
+                </div>
+                <div class="icon"><i class="fas fa-user-check"></i></div>
+                <a href="#" class="small-box-footer">Maelezo zaidi <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>48</h3>
+                    <p>Wanafunzi ambao hawajalipa</p>
+                </div>
+                <div class="icon"><i class="fas fa-user-clock"></i></div>
+                <a href="#" class="small-box-footer">Maelezo zaidi <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent transactions table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Miamala ya Hivi Karibuni</h3>
+                    <div class="card-tools float-right">
+                        <button class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Malipo Mpya
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Tarehe</th>
+                                <th>Jina la Mwanafunzi</th>
+                                <th>Kiasi (TZS)</th>
+                                <th>Aina ya Malipo</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>04/03/2026</td>
+                                <td>Godlisten P. Shomi</td>
+                                <td>250,000</td>
+                                <td>Ada ya Kidato cha 4</td>
+                                <td><span class="badge badge-success">Imelipwa</span></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>03/03/2026</td>
+                                <td>Juma M. Mwinyi</td>
+                                <td>150,000</td>
+                                <td>Michango ya Shule</td>
+                                <td><span class="badge badge-success">Imelipwa</span></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>02/03/2026</td>
+                                <td>Asha H. Mohamed</td>
+                                <td>300,000</td>
+                                <td>Ada ya Kidato cha 2</td>
+                                <td><span class="badge badge-warning">Inasubiri</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer clearfix">
+                    <ul class="pagination pagination-sm m-0 float-right">
+                        <li class="page-item"><a class="page-link" href="#">«</a></li>
+                        <li class="page-item"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#">»</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Weka tarehe ya leo
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('sw-TZ', { year: 'numeric', month: 'long', day: 'numeric' });
+</script>

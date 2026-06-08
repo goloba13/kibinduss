@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base2.html" %}
 {% block title %}Matokeo kwa Darasa na Stream - KIBINDU{% endblock %}
 {% block extra_css %}
 <style>
@@ -57,8 +57,8 @@
 {% endblock %}
 {% block content %}
 <div class="card">
-    <h1>Matokeo ya Wanafunzi kwa Darasa na Stream</h1>
-    
+    <h1>Matokeo ya Darasa au Stream</h1>
+
     <div class="filter-panel">
         <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
             <div>
@@ -89,6 +89,24 @@
                 </select>
             </div>
             <div>
+                <label>Mwaka</label>
+                <select id="yearSelect">
+                    <option value="">--Chagua--</option>
+                    {% for y in years %}
+                    <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Muhula</label>
+                <select id="termSelect">
+                    <option value="">--Chagua--</option>
+                    {% for t in terms %}
+                    <option value="{{ t }}" {% if t == current_term %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
                 <button id="loadBtn" class="btn" style="width: auto;">🔍 Tafuta Matokeo</button>
             </div>
         </div>
@@ -99,43 +117,51 @@
     <div id="tableContainer" style="overflow-x: auto;"></div>
 </div>
 {% endblock %}
-{% block scripts %}
+{% block extra_js %}
 <script>
     document.getElementById('loadBtn').addEventListener('click', async () => {
         const examId = document.getElementById('examSelect').value;
         const className = document.getElementById('classSelect').value;
         const stream = document.getElementById('streamSelect').value;
-        
+        const year = document.getElementById('yearSelect').value;
+        const term = document.getElementById('termSelect').value;
+
         if (!examId || !className) {
             alert('Tafadhali chagua aina ya mtihani na kidato.');
             return;
         }
-        
+
         const loading = document.getElementById('loading');
         const container = document.getElementById('tableContainer');
         const countDisplay = document.getElementById('countDisplay');
-        
+
         loading.style.display = 'block';
         container.innerHTML = '';
         countDisplay.innerHTML = '';
-        
+
         try {
             const response = await fetch('/api/stream-results', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ exam_type_id: examId, class: className, stream: stream })
+                body: JSON.stringify({
+                    exam_type_id: examId,
+                    class: className,
+                    stream: stream,
+                    year: year ? parseInt(year) : null,
+                    term: term ? parseInt(term) : null
+                })
             });
             const data = await response.json();
             if (data.error) throw new Error(data.error);
-            
+
             if (!data.length) {
                 container.innerHTML = '<p class="text-muted">Hakuna wanafunzi waliopata alama kwa mtihani huu katika darasa/stream ulilochagua.</p>';
                 countDisplay.innerHTML = '';
                 return;
             }
-            
-            countDisplay.innerHTML = `<strong>Wanafunzi waliojitokeza:</strong> ${data.length}`;
-            
+
+            countDisplay.innerHTML = `<strong>Idadi =:</strong> ${data.length}`;
+
             let allSubjects = new Set();
             data.forEach(student => {
                 student.subjects.forEach(subj => {
@@ -143,44 +169,51 @@
                 });
             });
             const subjectsList = Array.from(allSubjects).sort();
-            
+
             let html = '<table class="results-table"><thead><tr>';
-            html += '<th>#</th><th>Jina la Mwanafunzi</th><th>Jinsia</th>';
+            html += '<th>#</th><th>Jina</th><th>Jinsia</th>';
             subjectsList.forEach(sub => {
-                html += `<th>${sub}<br><small>(Alama/Pointi)</small></th>`;
+                html += `<th>${sub}<br><small>Grade</small></th>`;
             });
-            html += '<th>Jumla ya Pointi</th><th>Daraja (Division)</th></td></thead><tbody>';
-            
+            html += '<th>Point</th><th>Division</th></td></thead><tbody>';
+
             data.forEach((student, idx) => {
-                const divisionClass = `div-${student.division}`;
+                const divisionClass = student.division ? `div-${student.division}` : '';
                 html += `<tr>
                     <td>${idx+1}</td>
                     <td>${escapeHtml(student.student_name)}</td>
                     <td>${student.sex || '-'}</td>`;
-                
+
                 subjectsList.forEach(sub => {
                     const found = student.subjects.find(s => s.subject === sub);
-                    if (found && found.marks > 0) {
-                        html += `<td>${found.marks} / ${found.point}</td>`;
+                    if (found && found.grade) {
+                        html += `<td>${found.grade}</td>`;
                     } else {
                         html += `<td class="text-muted">-</td>`;
                     }
                 });
-                html += `<td>${student.total_points}</td>
-                          <td><span class="badge-division ${divisionClass}">${student.division}</span></td>
-                      </tr>`;
+                let totalPointsDisplay = student.total_points;
+                if (totalPointsDisplay === 'inc') {
+                    totalPointsDisplay = '<span class="text-warning" style="color:#e67e22;">inc</span>';
+                } else if (!totalPointsDisplay) {
+                    totalPointsDisplay = '-';
+                }
+                html += `<td>${totalPointsDisplay}</td>`;
+                html += `<td><span class="badge-division ${divisionClass}">${student.division || '-'}</span></td>`;
+                html += `</tr>`;
             });
             html += '</tbody></table>';
             container.innerHTML = html;
-            
+
         } catch (err) {
             container.innerHTML = `<p class="text-danger">Hitilafu: ${err.message}</p>`;
         } finally {
             loading.style.display = 'none';
         }
     });
-    
+
     function escapeHtml(str) {
+        if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
             if (m === '<') return '&lt;';

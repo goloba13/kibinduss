@@ -1,5 +1,5 @@
 {% extends "academic_base.html" %}
-{% block title %}Simamia Aina za Mitihani{% endblock %}
+{% block title %}Exam_types{% endblock %}
 {% block extra_css %}
 <style>
     .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
@@ -108,11 +108,11 @@
                         <td>{{ exam.id }}</td>
                         <td class="exam-name">{{ exam.exam_name }}</td>
                         <td class="text-center">
-                            <input type="checkbox" class="form-check-input is-done-checkbox" 
+                            <input type="checkbox" class="form-check-input is-done-checkbox"
                                    {% if exam.is_done %}checked{% endif %}>
                         </td>
                         <td class="text-center">
-                            <input type="checkbox" class="form-check-input is-allowed-checkbox" 
+                            <input type="checkbox" class="form-check-input is-allowed-checkbox"
                                    {% if exam.is_allowed_view %}checked{% endif %}>
                         </td>
                         <td class="text-center">

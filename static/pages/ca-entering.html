@@ -1,0 +1,403 @@
+<!-- Content Header -->
+<div class="content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="m-0">Ingiza Madaraja (Marks Entry)</h1>
+        <div>
+            <span class="mr-3">Darasa: <b>Form IV</b> | Somo: <b>Hisabati</b></span>
+            <button class="btn btn-sm btn-success" id="saveAllBtn"><i class="fas fa-save"></i> Hifadhi Zote</button>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<div class="container-fluid">
+    <!-- Jedwali la wanafunzi -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Wanafunzi wa Kidato cha 4</h3>
+                    <div class="card-tools float-right">
+                        <div class="input-group input-group-sm" style="width: 200px;">
+                            <input type="text" class="form-control" placeholder="Tafuta mwanafunzi...">
+                            <div class="input-group-append">
+                                <button class="btn btn-default"><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-hover" id="marksTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Namba ya Mtihani</th>
+                                <th>Jina la Mwanafunzi</th>
+                                <th>Jinsia</th>
+                                <th>Daraja (Marks)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>4S3177-0001</td>
+                                <td>Godlisten P. Shomi</td>
+                                <td>M</td>
+                                <td>
+                                    <input type="text" class="moveNext" placeholder="Weka daraja" value="78">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>4S3177-0002</td>
+                                <td>Juma M. Mwinyi</td>
+                                <td>M</td>
+                                <td>
+                                    <input type="text" class="moveNext" placeholder="Weka daraja" value="64">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>4S3177-0003</td>
+                                <td>Ali H. Juma</td>
+                                <td>M</td>
+                                <td>
+                                    <input type="text" class="moveNext" placeholder="Weka daraja">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>4S3177-0004</td>
+                                <td>Mary J. Thomas</td>
+                                <td>F</td>
+                                <td>
+                                    <input type="text" class="moveNext" placeholder="Weka daraja">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>4S3177-0005</td>
+                                <td>John S. Mrosso</td>
+                                <td>M</td>
+                                <td>
+                                    <input type="text" class="moveNext" placeholder="Weka daraja">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer clearfix">
+                    <ul class="pagination pagination-sm m-0 float-right">
+                        <li class="page-item"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+  // ----- ENTER KEY SUPPORT (Sogeza hadi kwenye input inayofuata) -----
+<script>
+const inputs = document.querySelectorAll(".moveNext");
+
+inputs.forEach((input, index) => {
+
+    input.addEventListener("keydown", function(e){
+
+        if(e.key === "Enter"){
+            e.preventDefault();
+
+            if(inputs[index + 1]){
+                inputs[index + 1].focus();
+            }
+
+        }
+
+    });
+
+});
+</script>
+<!-- Kisanduku cha vitufe kinachoelea (draggable) -->
+
+<!-- CSS ya ziada -->
+<style>
+    /* Kisanduku kinachoelea */
+    .floating-keyboard {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 320px;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        z-index: 10000;
+        user-select: none; /* Zuia uteuzi wakati wa kuburuta */
+    }
+
+    /* Kichwa cha kisanduku (cha kuburuta) */
+    .keyboard-header {
+        background-color: #0d2c23;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: move; /* Badilisha mshale kuonesha inaweza kuburutwa */
+    }
+
+    .keyboard-title {
+        font-weight: bold;
+    }
+
+    /* Swichi ya toggle (washa/zima) */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+        margin-right: 5px;
+    }
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+    .toggle-label {
+        font-size: 12px;
+        color: white;
+    }
+
+    /* Vitufe vya namba */
+    .keyboard-buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 0 0 12px 12px;
+    }
+    .key-btn {
+        padding: 12px 5px;
+        font-size: 18px;
+        font-weight: bold;
+        border: 1px solid #ddd;
+        background-color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+    }
+    .key-btn:hover {
+        background-color: #e9ecef;
+    }
+    .key-btn:active {
+        transform: scale(0.95);
+        background-color: #dee2e6;
+    }
+    .action-btn {
+        background-color: #0d2c23;
+        color: white;
+        border: none;
+        font-size: 16px;
+        padding: 10px 5px;
+    }
+    .action-btn:hover {
+        background-color: #1a4d3a;
+    }
+
+    /* Hali ya kuzima vitufe (disabled) */
+    .keyboard-disabled .key-btn {
+        opacity: 0.6;
+        pointer-events: none;
+        background-color: #e9ecef;
+    }
+
+    /* Input inayo active */
+    .mark-input:focus {
+        border-color: #0d2c23;
+        box-shadow: 0 0 0 3px rgba(13,44,35,0.2);
+        outline: none;
+    }
+</style>
+
+<!-- JavaScript ya kushughulikia drag, vitufe, na uendeshaji -->
+<script>
+(function() {
+    // -------------------- DRAGGABLE FLOATING BOX --------------------
+    const floatingBox = document.getElementById('floatingKeyboard');
+    const header = document.getElementById('keyboardHeader');
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    floatingBox.style.bottom = '20px';
+    floatingBox.style.right = '20px';
+    floatingBox.style.top = 'auto';
+    floatingBox.style.left = 'auto';
+
+    header.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        const rect = floatingBox.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        header.style.cursor = 'grabbing';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        let left = e.clientX - offsetX;
+        let top = e.clientY - offsetY;
+        left = Math.max(0, Math.min(left, window.innerWidth - floatingBox.offsetWidth));
+        top = Math.max(0, Math.min(top, window.innerHeight - floatingBox.offsetHeight));
+        floatingBox.style.left = left + 'px';
+        floatingBox.style.top = top + 'px';
+        floatingBox.style.right = 'auto';
+        floatingBox.style.bottom = 'auto';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            header.style.cursor = 'move';
+        }
+    });
+
+    document.addEventListener('mouseleave', () => {
+        if (isDragging) {
+            isDragging = false;
+            header.style.cursor = 'move';
+        }
+    });
+
+    // -------------------- TOGGLE ENABLE/DISABLE BUTTONS --------------------
+    const toggleCheckbox = document.getElementById('enableKeyboard');
+    const keyboardContainer = document.getElementById('floatingKeyboard');
+
+    toggleCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            keyboardContainer.classList.remove('keyboard-disabled');
+        } else {
+            keyboardContainer.classList.add('keyboard-disabled');
+        }
+    });
+
+    // -------------------- BUTTON FUNCTIONALITY --------------------
+    const markInputs = document.querySelectorAll('.mark-input');
+    let activeInput = null;
+
+    // Weka focus na click event
+    markInputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            activeInput = this;
+        });
+        input.addEventListener('click', function() {
+            activeInput = this;
+        });
+    });
+
+
+
+    // Vitufe vya namba
+    const keyButtons = document.querySelectorAll('.key-btn:not(.action-btn)');
+    keyButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!toggleCheckbox.checked) return;
+            if (!activeInput) {
+                alert('Tafadhali bofya kwenye kisanduku cha mwanafunzi unayemtaka.');
+                return;
+            }
+            const value = this.getAttribute('data-value');
+            activeInput.value += value;
+            activeInput.focus();
+        });
+    });
+
+    // Backspace
+    document.getElementById('backBtn').addEventListener('click', function() {
+        if (!toggleCheckbox.checked) return;
+        if (!activeInput) {
+            alert('Tafadhali bofya kwenye kisanduku cha mwanafunzi.');
+            return;
+        }
+        activeInput.value = activeInput.value.slice(0, -1);
+        activeInput.focus();
+    });
+
+    // Next button
+    document.getElementById('nextBtn').addEventListener('click', function() {
+        if (!toggleCheckbox.checked) return;
+        if (!activeInput) {
+            if (markInputs.length > 0) markInputs[0].focus();
+            return;
+        }
+        const currentIndex = Array.from(markInputs).indexOf(activeInput);
+        if (currentIndex < markInputs.length - 1) {
+            markInputs[currentIndex + 1].focus();
+        } else {
+            alert('Umefika mwisho wa orodha.');
+        }
+    });
+
+    // Back button
+    document.getElementById('prevBtn').addEventListener('click', function() {
+        if (!toggleCheckbox.checked) return;
+        if (!activeInput) {
+            if (markInputs.length > 0) markInputs[markInputs.length - 1].focus();
+            return;
+        }
+        const currentIndex = Array.from(markInputs).indexOf(activeInput);
+        if (currentIndex > 0) {
+            markInputs[currentIndex - 1].focus();
+        } else {
+            alert('Uko kwenye mwanzo wa orodha.');
+        }
+    });
+
+    // Save All
+    document.getElementById('saveAllBtn').addEventListener('click', function() {
+        const marksData = [];
+        markInputs.forEach(input => {
+            const row = input.closest('tr');
+            const examNo = row.querySelector('td:nth-child(2)').innerText;
+            marksData.push({ examNo, marks: input.value });
+        });
+        console.log('Data iliyohifadhiwa:', marksData);
+        alert('Madaraja yamehifadhiwa (angalia console).');
+    });
+
+    // Focus ya kwanza
+    if (markInputs.length > 0) markInputs[0].focus();
+})();
+</script>

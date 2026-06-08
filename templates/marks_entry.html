@@ -223,9 +223,9 @@
                         <td style="text-align: left;">{{ row.student_name }}</td>
                         <td>{{ row.sex or '' }}</td>
                         <td>
-                            <input type="number" class="mark-input" value="{{ row.marks if row.marks is not none else '' }}" 
-                                   min="0" max="100" step="1" 
-                                   data-student-id="{{ row.student_id }}" 
+                            <input type="number" class="mark-input" value="{{ row.marks if row.marks is not none else '' }}"
+                                   min="0" max="100" step="1"
+                                   data-student-id="{{ row.student_id }}"
                                    data-exam-reg-id="{{ row.exam_registration_id }}">
                             <span class="error-text"></span>
                         </td>
@@ -241,7 +241,7 @@
     <!-- marks_menu -->
     <div class="marks_menu mt-3">
         <div class="student-stats">
-            <span>Progress: 
+            <span>Progress:
                 <span id="liveMarksCount">{{ rows|selectattr('marks', 'defined')|selectattr('marks', '!=', '')|list|length }}</span>/{{ rows|length }}
             </span>
         </div>
@@ -257,7 +257,7 @@
         <span class="visually-hidden">Loading...</span>
     </div>
     <p class="mt-2">Subiri...</p>
-</div>    
+</div>
 </div>
 {% endblock %}
 
@@ -427,7 +427,7 @@
         // ---------- SAVE MARKS ----------
 document.getElementById('saveMarks')?.addEventListener('click', async function(e) {
     e.preventDefault();
-    
+
     // Kama kuna 'all' katika kidato, somo au aina ya mtihani – kataa
     if (isAnyAllSelected()) {
         showAllAlert();
@@ -444,7 +444,7 @@ document.getElementById('saveMarks')?.addEventListener('click', async function(e
         if (!input) return;
         const student_id = input.dataset.studentId;
         const marks = input.value.trim() === '' ? null : parseFloat(input.value);
-        
+
         if (marks !== null && (isNaN(marks) || marks < 0 || marks > 100)) {
             hasError = true;
             const errSpan = input.parentElement.querySelector('.error-text');
@@ -479,7 +479,7 @@ document.getElementById('saveMarks')?.addEventListener('click', async function(e
             body: JSON.stringify(payload)
         });
         const data = await response.json();
-        
+
         if (data.status === 'success') {
             alert('✅ Alama zimehifadhiwa kikamilifu.');
             location.reload();  // Onyesha mabadiliko mara moja
@@ -496,7 +496,7 @@ document.getElementById('saveMarks')?.addEventListener('click', async function(e
       // ---------- CREATE EXCEL FILE ----------
 document.getElementById('createFile')?.addEventListener('click', async function(e) {
     e.preventDefault();
-    
+
     if (isAnyAllSelected()) {
         showAllAlert();
         return;
@@ -505,15 +505,15 @@ document.getElementById('createFile')?.addEventListener('click', async function(
     // Kusanya data ya alama
     const rows = document.querySelectorAll('#marksBody tr');
     const excelData = [];
-    
+
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length < 4) return;
         const markInput = cells[3].querySelector('.mark-input');
         if (!markInput) return;
         const markValue = markInput.value.trim();
-        
-        
+
+
         excelData.push({
             Serial: cells[0].innerText.trim(),
             Name: cells[1].innerText.trim(),
@@ -524,7 +524,7 @@ document.getElementById('createFile')?.addEventListener('click', async function(
 
     if (excelData.length === 0) {
         alert('⚠️ Hakuna alama za kuweka kwenye faili.');
-        
+
     }
 
     // Pata taarifa za somo, aina ya mtihani, mwaka, na KIDATO
@@ -550,12 +550,12 @@ document.getElementById('createFile')?.addEventListener('click', async function(
                 form: form            // <--- Ongeza hii
             })
         });
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Server error: ${errorText.substring(0, 100)}`);
         }
-        
+
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -565,7 +565,7 @@ document.getElementById('createFile')?.addEventListener('click', async function(
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
+
         alert('✅ Faili limeundwa kikamilifu.');
     } catch (err) {
         alert('❌ Kosa: ' + err.message);
@@ -616,7 +616,7 @@ document.getElementById('analyseMarks')?.addEventListener('click', async functio
         if (data.status === 'success') {
             const a = data.analysis;
             const totalWeight = (a.A * 1) + (a.B * 2) + (a.C * 3) + (a.D * 4) + (a.F * 5);
-            const gpa = totalWeight / a.total_students;    
+            const gpa = totalWeight / a.total_students;
             alert(`📊 UCHAMBUZI WA ALAMA\n\nWanafunzi wenye alama: ${a.total_students}\nWastani: ${a.average}\nAlama ya juu: ${a.max}\nAlama ya chini: ${a.min}\nIdadi ya A = ${a.A}\nIdadi ya B = ${a.B}\nIdadi ya C = ${a.C}\nIdadi ya D = ${a.D}\nIdadi ya F = ${a.F}\nGPA = ${gpa.toFixed(2)}`);
         } else {
             alert('Hitilafu: ' + data.message);

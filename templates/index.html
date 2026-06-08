@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}Angalia Matokeo | KIBINDU{% endblock %}
+{% block title %}Matokeo{% endblock %}
 
 {% block content %}
 <div class="card">
     <div class="slide0 show">
-        <img src="{{ url_for('static', filename='img/slide1.png') }}" alt="slide1" style="width: 39%; height: auto;" onload="this.style.opacity=1">
+        <img src="{{ url_for('static', filename='img/slide1.png') }}" alt="Kibindu" style="width: 39%; height: auto;" onload="this.style.opacity=1">
     </div>
     <h1 class="text-center">
         <span id="typed-text"></span>
         <span class="cursor-blink"></span>
     </h1>
     <p class="text-center" style="color: #084816; margin-bottom: 2rem;">
-        Kupata matokeo, weka namba yako ya simu iliyohifadhiwa shuleni au 
+        Kupata matokeo, weka namba yako ya simu iliyohifadhiwa shuleni au
         namba ya mtihani ya mwanafunzi uliyotumiwa kutoka shuleni kwa SMS. Kama huna vigezo hivyo,
-        <a href="{{ url_for('mbadala') }}"> Ingia hapa</a> 
+        <a href="{{ url_for('mbadala') }}"> Ingia hapa</a>
     </p>
 
     {% if error %}
@@ -30,27 +30,27 @@
             </label>
             <input type="tel" id="phone" name="phone" placeholder="Mfano: 06xxxxxxx" autocomplete="off" value="{{ request.form.phone or '' }}">
         </div>
-        
+
         <div class="form-group">
             <label for="pin">
                 <i class="fas fa-lock" style="margin-right: 8px;"></i>Namba ya mtihani
             </label>
             <input type="text" id="pin" name="pin" placeholder="Mfano: 100" autocomplete="off" value="{{ request.form.pin or '' }}">
         </div>
-        
+
         <button type="submit" class="btn">
             <i class="fas fa-search" style="margin-right: 8px;"></i>Angalia Matokeo
         </button>
     </form>
-    
+
     <div class="note">
         <p style="margin-top: 1rem;">
-            <i class="fas fa-info-circle"></i> 
+            <i class="fas fa-info-circle"></i>
             Matokeo yanapatikana kwa wanafunzi waliosajiliwa.
-        </p> 
-        <p>__________________</p>   
-        <p><a href="{{ url_for('login') }}">Inside Kibindu</a></p>    
-        
+        </p>
+        <p>__________________</p>
+        <p><a href="{{ url_for('login') }}">Inside Kibindu</a></p>
+
     </div>
 </div>
 
@@ -60,21 +60,21 @@
     <button id="next" class="sliderBtn">&gt;</button>
     </div>
     <div class="slide show">
-            <iframe 
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d393484.98253332544!2d37.35248565673828!3d-6.00630094528231!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1845277640875113%3A0x99257d6ac02a0fb0!2sKibindu%20Secondary%20School!5e1!3m2!1sen!2stz!4v1777709039501!5m2!1sen!2stz" 
-        width="100%" 
-        height="400" 
-        style="border:0;" 
-        allowfullscreen="" 
+            <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d393484.98253332544!2d37.35248565673828!3d-6.00630094528231!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1845277640875113%3A0x99257d6ac02a0fb0!2sKibindu%20Secondary%20School!5e1!3m2!1sen!2stz!4v1777709039501!5m2!1sen!2stz"
+        width="100%"
+        height="400"
+        style="border:0;"
+        allowfullscreen=""
         loading="lazy">
     </iframe>
     <p>School location</p>
-    </div>    
+    </div>
     <div class="slide">
         <img src="{{ url_for('static', filename='img/slide1.png') }}" alt="slide1" onload="this.style.opacity=1">
-        <p>Get join instruction</p>
+        <p>Get joining instruction</p>
     </div>
- 
+
 </div>
 
 <style>
@@ -283,7 +283,7 @@ body::before {
         padding: 1rem 1rem;
         margin: 1.5rem auto;
     }
-    
+
     .card h1 {
         font-size: 1.5rem;
     }
@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ----- Mutual exclusion for phone and pin -----
     const phoneInput = document.getElementById('phone');
     const pinInput = document.getElementById('pin');
-    
+
     function clearOther(field, otherField) {
         field.addEventListener('input', function() {
             if (this.value.trim() !== '') {
@@ -324,18 +324,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     if (phoneInput && pinInput) {
         clearOther(phoneInput, pinInput);
         clearOther(pinInput, phoneInput);
     }
-    
+
     // ----- Slide show (kama ilivyokuwa) -----
     let nextBtn = document.getElementById("next");
     let prevBtn = document.getElementById("prev");
     let slides = document.querySelectorAll(".slide");
     let changeSlide = 0;
-    
+
     if (nextBtn && prevBtn) {
         nextBtn.addEventListener("click", function() {
             slides.forEach(function (slide, index) {
@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 slides[changeSlide].classList.add("show");
             }
         });
-        
+
         prevBtn.addEventListener('click', function () {
             slides.forEach(function (slide, index) {
                 if (slide.classList.contains("show")) {
@@ -375,12 +375,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const text = "Angalia Matokeo";
     const typedSpan = document.getElementById("typed-text");
     if (!typedSpan) return;
-    
+
     let i = 0;
     let direction = 1; // 1 = kuandika mbele, -1 = kufuta
     let isDeleting = false;
     let timeout;
-    
+
     function typeAndDelete() {
         // Hakikisha tunaandika maandishi kamili kwa sasa
         if (!isDeleting && i < text.length) {
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
             timeout = setTimeout(typeAndDelete, 500);
         }
     }
-    
+
     // Anza typing baada ya kurasa kuwa tayari
     window.addEventListener("DOMContentLoaded", typeAndDelete);
 })();

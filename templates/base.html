@@ -3,22 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}KIBINDU SS{% endblock %}</title>
+    <title>{% block title %}Matokeo ya mwanafunzi | Kibindu{% endblock %}</title>
+    <meta name="description" content="ANGALIA MATOKEO YA MWANAFUNZI WA KIDATO CHA 1, 2, 3 au 4 kwa mitihani ya ndani kwa mwanafunzi mmoja mmoja. Weka namba ya simu inayotambulika shuleni au namba ya mtihani ya mwanafunzi husika.">
+    <meta name="keywords" content="kibindu, sekondari, matokeo, matokeo kidato cha nne, matokeo kidato cha pili, shule, secondary, matokeo ya form, matokeo kidato, Kibindusec, Chalinze sekondari, elimu Tanzania, joining instruction">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="Swahili, English">
+    <meta name="revisit-after" content="7 days">
+    <meta name="google-site-verification" content="I7WGzk9iCe3e8i7CsdKxHA1W2PDr1Nn9sPR6w-0YmDU" />
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kibindusec.pythonanywhere.com/">
+    <meta property="og:title" content="Kibindu Secondary School - Mfumo wa Matokeo">
+    <meta property="og:description" content="Angalia matokeo ya mitihani kwa urahisi. Weka namba ya simu au namba ya mtihani.">
+    <meta property="og:image" content="{{ url_for('static', filename='img/logo-social.png') }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Kibindu Secondary School - Matokeo">
+    <meta name="twitter:description" content="Angalia matokeo yako kwa haraka na kwa urahisi.">
+
+    <link rel="canonical" href="https://kibindusec.pythonanywhere.com/">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/slide1.png') }}">
-    
+
     <!-- Preconnect kwa vyanzo vya nje – ili kupunguza muda wa DNS lookup -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
+
     <!-- Google Fonts – kwa defer (isizuie) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
-    
+
     <!-- Font Awesome – deferred -->
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    
+
     <!-- Critical CSS (inline) – inatosha kuonyesha sehemu ya juu ya ukurasa -->
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -145,7 +163,7 @@
         }
         /* Styles za ziada zitaongezwa na non-critical.css (kama particles, animations n.k) */
     </style>
-    
+
     {% block extra_css %}{% endblock %}
 </head>
 <body>

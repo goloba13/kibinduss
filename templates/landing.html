@@ -193,23 +193,24 @@
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.8rem;
         }
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
 
         .card {
             background: rgb(213, 245, 224);
             border-radius: 24px;
             padding: 1.8rem;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.491);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.59);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .card-link {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
+
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.806);
+            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.85);
         }
 
         .card-icon {
@@ -405,7 +406,7 @@
     <section class="hero">
         <div class="container">
             <h1>Matokeo ya Mitihani<br>Kwa Haraka</h1>
-            <p>Unatumia namba yako ya simu iliyohifadhiwa shuleni au namba ya mtihani uliyopatiwa kupata matokeo.</p>
+            <p>Kupata matokeo, namba za simu au namba ya ID ya mwanafunzi itatumika.</p>
             <div class="hero-buttons">
                 <a href="/index" class="btn-primary">🔍 Angalia Matokeo</a>
                 <a href="/index" class="btn-secondary">📄 Joining Instruction</a>
@@ -441,20 +442,20 @@
                             <p>Mitihani ya terminal, mock, midterm na annual.</p>
                         </div>
                     </a>
-                    <a href="/public-download-joining" class="card-link">
+                    <a href="/index" class="card-link">
                         <div class="card">
                             <div class="card-icon">📄</div>
                             <h3>Joining Instruction</h3>
                             <p>Fomu za kujiunga kwa wanafunzi kidato cha II-IV.</p>
                         </div>
                     </a>
-                    <a href="/public-download-joining" class="card-link">
+                    <a href="/index" class="card-link">
                        <div class="card">
                            <div class="card-icon">📎</div>
                            <h3>Joining Instruction</h3>
                            <p>Fomu za kujiunga kwa wanafunzi kidato cha I.</p>
                         </div>
-                    </a>    
+                    </a>
             </div>
         </div>
     </section>

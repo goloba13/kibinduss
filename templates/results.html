@@ -49,6 +49,26 @@
     .btn-primary:hover {
         background: #0f2c23;
     }
+    .search-box {
+        margin: 1rem 0 1.5rem 0;
+        display: flex;
+        justify-content: flex-end;
+    }
+    .search-box input {
+        width: 300px;
+        padding: 0.6rem 1rem;
+        border: 1px solid #ccc;
+        border-radius: 40px;
+        font-size: 0.9rem;
+        background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 12px center;
+        padding-left: 36px;
+        transition: all 0.2s;
+    }
+    .search-box input:focus {
+        outline: none;
+        border-color: #1e4a3d;
+        box-shadow: 0 0 0 2px rgba(30,74,61,0.2);
+    }
     .results-table {
         width: 100%;
         border-collapse: collapse;
@@ -89,6 +109,13 @@
         border-radius: 12px;
         margin-bottom: 1rem;
     }
+    .no-results {
+        text-align: center;
+        padding: 2rem;
+        background: #f9f9f9;
+        border-radius: 16px;
+        margin-top: 1rem;
+    }
     @media (max-width: 768px) {
         .results-table th, .results-table td {
             padding: 0.5rem;
@@ -96,6 +123,9 @@
         }
         .copy-btn {
             font-size: 0.7rem;
+        }
+        .search-box input {
+            width: 100%;
         }
     }
 </style>
@@ -110,7 +140,7 @@
             <div class="col">
                 <label>Kidato</label>
                 <select name="form" required>
-                    <option value="">-- Chagua kidato --</option>    
+                    <option value="">-- Chagua kidato --</option>
                     {% for f in forms %}
                     <option value="{{ f }}" {% if f == selected_class %}selected{% endif %}>{{ f }}</option>
                     {% endfor %}
@@ -128,7 +158,7 @@
             <div class="col">
                 <label>Mwaka</label>
                 <select name="year" required>
-                    <option value="">-- Chagua mwaka --</option>    
+                    <option value="">-- Chagua mwaka --</option>
                     {% for y in years %}
                     <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
                     {% endfor %}
@@ -154,37 +184,44 @@
     {% endif %}
 
     {% if students %}
+    <!-- Live search input -->
+    <div class="search-box">
+        <input type="text" id="liveSearch" placeholder=" Search..." autocomplete="off">
+    </div>
+
     <div style="overflow-x: auto;">
-        <table class="results-table">
-<thead>
-    <tr>
-        <th>Student ID</th>
-        <th>Student name</th>
-        <th>Subjects</th>
-        <th>Points</th>
-        <th>Division</th>
-        <th>Ranking</th>
-        <th>Action</th>
-    </tr>
-</thead>
-<tbody>
-    {% for student in students %}
-    <tr>
-        <td>{{ student.out_student_id }}</td>
-        <td>{{ student.out_student_name }}</td>
-        <td>{{ student.out_subjects_grades }}</td>
-        <td>{{ student.out_total_points }}</td>
-        <td>{{ student.out_division }}</td>
-        <td>{{ student.out_ranking }} / {{ student.out_total_students }}</td>
-        <td><button class="copy-btn" data-name="{{ student.out_student_name }}" data-ranking="{{ student.out_ranking }}" data-total="{{ student.out_total_students }}" data-division="{{ student.out_division }}" data-points="{{ student.out_total_points }}" data-subjects="{{ student.out_subjects_grades }}" data-id="{{student.out_student_id}}">Copy</button></td>
-    </tr>
-    {% endfor %}
-</tbody>
+        <table class="results-table" id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student name</th>
+                    <th>Subjects</th>
+                    <th>Points</th>
+                    <th>Division</th>
+                    <th>Ranking</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                {% for student in students %}
+                <tr class="student-row">
+                    <td class="student-id">{{ student.out_student_id }}</td>
+                    <td class="student-name">{{ student.out_student_name }}</td>
+                    <td>{{ student.out_subject_marks }}</td>
+                    <td>{{ student.out_total_points }}</td>
+                    <td>{{ student.out_division }}</td>
+                    <td>{{ student.out_ranking }} / {{ student.out_total_students }}</td>
+                    <td><button class="copy-btn" data-name="{{ student.out_student_name }}" data-ranking="{{ student.out_ranking }}" data-total="{{ student.out_total_students }}" data-division="{{ student.out_division }}" data-points="{{ student.out_total_points }}" data-subjects="{{ student.out_subject_marks }}" data-id="{{ student.out_student_id }}">Copy</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
+    <!-- Optional: message shown when no rows match search -->
+    <div id="noMatchMessage" style="display: none;" class="no-results">✖ NO result found</div>
     {% else %}
         {% if request.method == 'POST' %}
-        <p>Hakuna matokeo kwa vigezo ulivyochagua.</p>
+        <p>Your selection does not match results available.</p>
         {% endif %}
     {% endif %}
 </div>
@@ -192,8 +229,8 @@
 
 {% block extra_js %}
 <script>
+    // Helper for copy
     function copyToClipboard(text) {
-        // Jaribu Clipboard API kwanza
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(function() {
                 alert('Ujumbe umechukuliwa!');
@@ -228,25 +265,71 @@
         document.body.removeChild(textarea);
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // Copy event listeners
+    function initCopyButtons() {
         var buttons = document.querySelectorAll('.copy-btn');
-        console.log('Found buttons:', buttons.length);
         for (var i = 0; i < buttons.length; i++) {
-            buttons[i].addEventListener('click', function(e) {
-                e.preventDefault();
-                var btn = this;
-                var id = btn.getAttribute('data-id')
-                var name = btn.getAttribute('data-name');
-                var ranking = btn.getAttribute('data-ranking');
-                var total = btn.getAttribute('data-total');
-                var division = btn.getAttribute('data-division');
-                var points = btn.getAttribute('data-points');
-                var subjects = btn.getAttribute('data-subjects');
-                var status = (division === 'I' || division === 'II' || division === 'III' || division === 'IV') ? 'amefaulu' : 'amefeli';
-                var message = 'Ndugu Mzazi wa ' + name + ', mwanao amekuwa wa ' + ranking + ' kati ya wanafunzi ' + total + ' na ' + status + ' kwa matokeo ya ' + subjects + ' na Div=' + division + ' ya point ' + points + '. Zaidi ingia https://kibindusec.pythonanywhere.com/check_results?pin=' + id;
-                copyToClipboard(message);
-            });
+            // Remove existing listeners to avoid duplicates when re-attaching (not needed here but safe)
+            buttons[i].removeEventListener('click', copyHandler);
+            buttons[i].addEventListener('click', copyHandler);
         }
+    }
+
+    function copyHandler(e) {
+        e.preventDefault();
+        var btn = this;
+        var id = btn.getAttribute('data-id');
+        var name = btn.getAttribute('data-name');
+        var ranking = btn.getAttribute('data-ranking');
+        var total = btn.getAttribute('data-total');
+        var division = btn.getAttribute('data-division');
+        var points = btn.getAttribute('data-points');
+        var subjects = btn.getAttribute('data-subjects');
+        var status = (division === 'I' || division === 'II' || division === 'III' || division === 'IV') ? 'amefaulu' : 'amefeli';
+        var message = 'Ndugu Mzazi wa ' + name + ', mwanao amekuwa wa ' + ranking + ' kati ya wanafunzi ' + total + ' na ' + status + ' kwa matokeo ya ' + subjects + ' na Div=' + division + ' ya ' + points + '. Zaidi ingia https://kibindusec.pythonanywhere.com/check_results?pin=' + id;
+        copyToClipboard(message);
+    }
+
+    // Live search function
+    function initLiveSearch() {
+        var searchInput = document.getElementById('liveSearch');
+        if (!searchInput) return;
+
+        var tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+
+        var rows = tbody.getElementsByClassName('student-row');
+        var noMatchDiv = document.getElementById('noMatchMessage');
+
+        searchInput.addEventListener('keyup', function() {
+            var filter = this.value.trim().toLowerCase();
+            var anyVisible = false;
+
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                var idCell = row.querySelector('.student-id');
+                var nameCell = row.querySelector('.student-name');
+                var idText = idCell ? idCell.textContent.toLowerCase() : '';
+                var nameText = nameCell ? nameCell.textContent.toLowerCase() : '';
+
+                if (filter === '' || idText.includes(filter) || nameText.includes(filter)) {
+                    row.style.display = '';
+                    anyVisible = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+
+            // Show/hide "no results" message
+            if (noMatchDiv) {
+                noMatchDiv.style.display = anyVisible ? 'none' : 'block';
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initCopyButtons();
+        initLiveSearch();
     });
 </script>
 {% endblock %}

@@ -223,7 +223,7 @@ input[type="checkbox"] {
                     <tbody>
                         {% for student in students %}
                         <tr>
-                            <td><input type="checkbox" class="student-checkbox" value="{{ student.id }}" 
+                            <td><input type="checkbox" class="student-checkbox" value="{{ student.id }}"
                                        {% if student.id in registered_students %}checked{% endif %}></td>
                             <td>{{ student.student_name }}</td>
                             <td>{{ student.current_class }}</td>
@@ -282,8 +282,8 @@ input[type="checkbox"] {
             const response = await fetch('/save_subject_registrations', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    subject_id: parseInt(subject_id), 
+                body: JSON.stringify({
+                    subject_id: parseInt(subject_id),
                     student_ids: student_ids,
                     form: selectedForm   // ← Ongezeko muhimu
                 })

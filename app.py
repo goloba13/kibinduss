@@ -1,17 +1,17 @@
 import os
+URL = "https://trwivebwhsvutljhsvll.supabase.co"
+KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRyd2l2ZWJ3aHN2dXRsamhzdmxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NDc2MzgsImV4cCI6MjA4OTMyMzYzOH0.9IT5SjOd1mOeDfYWTdnqe7SIIkc49aDVzF9FlJZGknY"
 from flask import Flask, render_template, send_from_directory, request, session, flash, redirect, url_for, jsonify, send_file
 from supabase import create_client #Client
 import bcrypt
 import io
 import json
 import requests
-from bs4 import BeautifulSoup
 import pandas as pd
 from functools import wraps
 from datetime import datetime, date, timedelta
 from weasyprint import HTML, CSS
 from io import BytesIO
-import zipfile
 from werkzeug.utils import secure_filename
 import traceback
 import time
@@ -24,9 +24,6 @@ from openpyxl.utils import get_column_letter
 import pytz  # Ikiwa unahitaji timezone, au tumia datetime.utcnow()
 from flask_sitemapper import Sitemapper
 
-load_dotenv()
-URL = os.getenv('SUPABASE_URL')
-KEY = os.getenv('SUPABASE_KEY')
 def time_ago(dt):
     if isinstance(dt, str):
         # Badilisha 'Z' kuwa '+00:00' na uweke desimali iwe na tarakimu 6
@@ -93,9 +90,7 @@ def compute_grade(marks):
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY')
-if not app.secret_key:
-    raise ValueError("SECRET_KEY environment variable not set!")
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 sitemapper = Sitemapper()
 
@@ -107,9 +102,9 @@ sitemapper.init_app(app)
 STORAGE_BUCKET = "duty_reports"
 supabase = create_client(URL, KEY) if URL and KEY else None
 
-API_KEY = os.environ.get('API_KEY')
-MODEL = os.environ.get('MODEL')
-API_URL = os.environ.get('API_URL')
+API_KEY = os.environ.get('31b9e69cac7d42388cd07a65fcaae8c4.Dwp57hqv0rzlfd2N')
+MODEL = os.environ.get('AI_MODEL', 'glm-4.6v-flash')
+API_URL = os.environ.get('AI_API_URL', 'https://api.z.ai/api/paas/v4/chat/completions')
 
 ZAI_API_KEY = os.environ.get('ZAI_API_KEY', '31b9e69cac7d42388cd07a65fcaae8c4.Dwp57hqv0rzlfd2N')
 ZAI_API_URL = os.environ.get('ZAI_API_URL', 'https://api.z.ai/api/paas/v4/chat/completions')  # example
@@ -136,12 +131,12 @@ def login_required(f):
 def favicon():
     return send_from_directory('static', 'img/favicon.ico')
 
-@sitemapper.include(lastmod="2026-05-28")
+@sitemapper.include(lastmod="2026-06-05")
 @app.route('/')
 def landing():
     return render_template('landing.html')
 
-@sitemapper.include(lastmod="2026-05-28")
+@sitemapper.include(lastmod="2026-06-05")
 @app.route('/index')
 def index():
     return render_template('index.html')  # landing page (si lazima iwe na sidebar)
@@ -270,7 +265,7 @@ def marks_entry():
 
     # Kagua kama kuna 'all'
     if selected_form == 'all' or selected_subject == 'all' or selected_exam_type_id == 'all':
-        warning = "⚠️ Tafadhali chagua KIDATO, SOMO na AINA YA MTIHANI maalum (si 'all') ili kuona orodha ya wanafunzi."
+        warning = "⚠️ Tafadhali chagua KIDATO, SOMO na AINA YA MTIHANI."
     else:
         try:
             # Itisha SQL function kwa pigo moja
@@ -310,11 +305,17 @@ def marks_entry():
 
 
 
+import traceback
+from flask import request, jsonify, session
+
 @app.route('/save-marks', methods=['POST'])
 def save_marks():
+    # 1. Authentication: Angalia kama mtumiaji ameingia
     if 'user_id' not in session:
         return jsonify({'status': 'error', 'message': 'Hujaoana. Tafadhali ingia kwanza.'}), 401
+
     user_id = session['user_id']
+    user_role = session.get('role')  # 'Academic', 'Teacher', 'Admin', n.k.
 
     try:
         data = request.json
@@ -325,48 +326,66 @@ def save_marks():
         term = data.get('term')
         marks_list = data.get('marks', [])
 
+        # Hakikisha hakuna 'all'
         if form_class == 'all' or subject_name == 'all' or exam_type_id == 'all':
             return jsonify({'status': 'error', 'message': 'Huwezi kuhifadhi alama ukiwa umechagua "all".'}), 400
 
-        # 1. Angalia ruhusa za mwalimu
-        teacher_res = supabase.table('teachers_table').select('id').eq('user_id', user_id).execute()
-        if not teacher_res.data:
-            return jsonify({'status': 'error', 'message': 'Hujasajiliwa kama mwalimu.'}), 403
-        teacher_id = teacher_res.data[0]['id']
+        # ------------------------------------------------------------
+        # 2. Ukaguzi wa ruhusa (Role-based)
+        # ------------------------------------------------------------
+        if user_role == 'Academic':
+            # Academic ana ruhusa kamili – hakuna haja ya kuangalia teacher_subjects
+            pass
+        else:
+            # Kwa wengine (Teacher, Admin) – angalia kama amepewa somo hili
+            teacher_res = supabase.table('teachers_table').select('id').eq('user_id', user_id).execute()
+            if not teacher_res.data:
+                return jsonify({'status': 'error', 'message': 'Hujasajiliwa kama mwalimu.'}), 403
+            teacher_id = teacher_res.data[0]['id']
 
-        teacher_check = supabase.table('teacher_subjects')\
-            .select('id')\
-            .eq('teacher_id', teacher_id)\
-            .eq('subject_name', subject_name)\
-            .eq('form', form_class)\
-            .execute()
-        if not teacher_check.data:
-            return jsonify({'status': 'error', 'message': 'Huna ruhusa: wasiliana na mwenye somo.'}), 403
+            teacher_check = supabase.table('teacher_subjects')\
+                .select('id')\
+                .eq('teacher_id', teacher_id)\
+                .eq('subject_name', subject_name)\
+                .eq('form', form_class)\
+                .execute()
+            if not teacher_check.data:
+                return jsonify({'status': 'error', 'message': 'Huna ruhusa: wasiliana na mwenye somo.'}), 403
 
-        # 2. Pata subject_id
+        # ------------------------------------------------------------
+        # 3. Pata subject_id kutoka jina la somo
+        # ------------------------------------------------------------
         subject_res = supabase.table('subjects').select('id').eq('subject_name', subject_name).execute()
         if not subject_res.data:
             return jsonify({'status': 'error', 'message': 'Somo halipo.'}), 400
         subject_id = subject_res.data[0]['id']
 
-        # 3. Badilisha aina za data
-        exam_type_id = int(exam_type_id)
-        year = int(year)
-        term = int(term)
+        # ------------------------------------------------------------
+        # 4. Badilisha aina za data
+        # ------------------------------------------------------------
+        try:
+            exam_type_id = int(exam_type_id)
+            year = int(year)
+            term = int(term)
+        except (TypeError, ValueError):
+            return jsonify({'status': 'error', 'message': 'Exam type, year, na term lazima ziwe namba.'}), 400
 
-        # 4. Tengeneza marks_data kwa ajili ya RPC (JSONB)
+        # ------------------------------------------------------------
+        # 5. Tengeneza marks_data kwa ajili ya RPC (JSONB)
+        # ------------------------------------------------------------
         marks_data = []
         for item in marks_list:
             student_id = item.get('student_id')
-            marks_value = item.get('marks')  # inaweza kuwa None
-            # Hakikisha student_id ni namba
+            marks_value = item.get('marks')  # inaweza kuwa None (kufuta alama)
             if student_id is not None:
                 marks_data.append({
                     'student_id': int(student_id),
                     'marks': marks_value  # None itakubalika kama null
                 })
 
-        # 5. Piga Supabase RPC
+        # ------------------------------------------------------------
+        # 6. Piga Supabase RPC save_marks_bulk
+        # ------------------------------------------------------------
         result = supabase.rpc('save_marks_bulk', {
             'p_class': form_class,
             'p_subject_id': subject_id,
@@ -376,17 +395,16 @@ def save_marks():
             'marks_data': marks_data
         }).execute()
 
-        # result.data ina JSONB na status na message
+        # result.data ni JSONB yenye 'status' na 'message'
         if result.data and result.data.get('status') == 'success':
             return jsonify({'status': 'success', 'message': result.data.get('message', 'Alama zimehifadhiwa.')})
         else:
-            return jsonify({'status': 'error', 'message': result.data.get('message', 'Hitilafu isiyojulikana')}), 500
+            error_msg = result.data.get('message', 'Hitilafu isiyojulikana') if result.data else 'Hitilafu isiyojulikana'
+            return jsonify({'status': 'error', 'message': error_msg}), 500
 
     except Exception as e:
         traceback.print_exc()
         return jsonify({'status': 'error', 'message': str(e)}), 500
-
-
 
 
 
@@ -3098,13 +3116,27 @@ def export_analysis():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+#===================================================================================================
+#                                                         STREMED RESULTS
+#=======================================================================================================
+
 @app.route('/stream-results')
 def stream_results_page():
-    """Ukurasa wa kuonyesha matokeo ya darasa kwa exam, class, stream"""
     exam_types = supabase.table('exam_types').select('id, exam_name').execute().data
     classes = ['Form1', 'Form2', 'Form3', 'Form4', 'Form5', 'Form6']
     streams = ['A', 'B', 'C', 'D']
-    return render_template('stream_results.html', exam_types=exam_types, classes=classes, streams=streams)
+    # Orodha ya miaka (miaka 4 iliyopita hadi mwaka ujao)
+    current_year = datetime.now().year
+    years = list(range(current_year - 3, current_year + 2))
+    terms = [1, 2, 3]
+    return render_template('stream_results.html',
+                           exam_types=exam_types,
+                           classes=classes,
+                           streams=streams,
+                           years=years,
+                           terms=terms,
+                           current_year=current_year,
+                           current_term=1)   # chaguo-msingi muhula 1
 
 @app.route('/api/stream-results', methods=['POST'])
 def api_stream_results():
@@ -3112,20 +3144,24 @@ def api_stream_results():
     exam_type_id = data.get('exam_type_id')
     class_name = data.get('class')
     stream = data.get('stream', 'all')
+    year = data.get('year')      # inaweza kuwa None au namba
+    term = data.get('term')      # inaweza kuwa None au namba
 
     if not exam_type_id or not class_name:
         return jsonify({'error': 'Exam type na class vinahitajika'}), 400
 
     try:
+        # Piga Supabase RPC
         result = supabase.rpc('get_stream_results', {
             'p_exam_type_id': int(exam_type_id),
             'p_class': class_name,
-            'p_stream': stream
+            'p_stream': stream,
+            'p_year': year,        # Supabase inakubali None kama NULL
+            'p_term': term
         }).execute()
         return jsonify(result.data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 # -------------------------------------------------------------
 def format_index(seq_num, pattern, start):
@@ -3233,8 +3269,6 @@ def download_sitting_plan():
                      download_name='sitting_plan.pdf',
                      mimetype='application/pdf')
 
-from datetime import datetime
-
 @app.route('/isal')
 def isal():
     classes = ['Form1', 'Form2', 'Form3', 'Form4', 'Form5', 'Form6']
@@ -3276,7 +3310,8 @@ def api_isal():
     except Exception as e:
         print(f"Supabase RPC error: {e}")
         return jsonify({'error': str(e)}), 500
-    
+
+
 
 @app.route('/export-index-sheet', methods=['POST'])
 def export_index_sheet():
@@ -3356,7 +3391,8 @@ def export_index_sheet():
         # Tafadhali andika kwenye logi
         print(f"Export error: {e}")
         return jsonify({'error': str(e)}), 500
-    
+
+
        #============================ DOWNLOAD FULL CLASS RESULT ============================
 @app.route('/download-results')
 def download_results_page():
@@ -3371,7 +3407,7 @@ def get_exam_types():
         return jsonify(result.data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-       
+
 @app.route('/export-class-full-results', methods=['POST'])
 def export_class_full_results():
     data = request.json
@@ -3529,7 +3565,7 @@ def download_all_pdfs():
         print(f"ZIP creation error: {e}")
         return jsonify({'error': str(e)}), 500
 
-    #========================================================================    
+    #========================================================================
 @app.route('/student-pdf', methods=['POST'])
 def student_pdf():
     try:
@@ -3559,7 +3595,7 @@ def student_pdf():
 
         # Angalia ikiwa template ipo
         try:
-            html_string = render_template('student_report_pdf.html', 
+            html_string = render_template('student_report_pdf.html',
                                           student=student_data,
                                           subjects_list=subjects_list,
                                           exam_type_id=exam_type_id,
@@ -3576,8 +3612,8 @@ def student_pdf():
             return jsonify({'error': f'PDF generation error: {str(e)}'}), 500
 
         filename = f"Report_{student_data['student_name'].replace(' ', '_')}.pdf"
-        return send_file(BytesIO(pdf_file), as_attachment=True, 
-                         download_name=filename, 
+        return send_file(BytesIO(pdf_file), as_attachment=True,
+                         download_name=filename,
                          mimetype='application/pdf')
 
     except Exception as e:
@@ -3609,10 +3645,16 @@ def public_download_joining():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+
 # Hii ndio njia ya kutoa sitemap.xml
 @app.route("/sitemap.xml")
 def sitemap():
     return sitemapper.generate()
+
+@app.route('/robots.txt')
+def robots_txt():
+    return send_from_directory(app.static_folder, 'robots.txt', mimetype='text/plain')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
