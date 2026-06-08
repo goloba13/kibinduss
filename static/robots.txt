@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://kibindusec.onrender.com/sitemap.xml
+Sitemap: https://kibindusc.onrender.com/sitemap.xml
