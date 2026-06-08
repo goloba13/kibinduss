@@ -1,6 +1,4 @@
 import os
-URL = "https://trwivebwhsvutljhsvll.supabase.co"
-KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRyd2l2ZWJ3aHN2dXRsamhzdmxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NDc2MzgsImV4cCI6MjA4OTMyMzYzOH0.9IT5SjOd1mOeDfYWTdnqe7SIIkc49aDVzF9FlJZGknY"
 from flask import Flask, render_template, send_from_directory, request, session, flash, redirect, url_for, jsonify, send_file
 from supabase import create_client #Client
 import bcrypt
@@ -87,11 +85,14 @@ def compute_grade(marks):
     else:
         return 'F'
 
-
-
+SUPABASE_URL = os.environ.get('SUPABASE_URL')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
-
+app.secret_key = os.environ.get('SECRET_KEY')
+app.secret_key = os.environ.get('SECRET_KEY')
+if not app.secret_key:
+    raise ValueError("SECRET_KEY environment variable not set!")
+    
 sitemapper = Sitemapper()
 
 # Hatua ya 3: Unganisha sitemapper na programu yako (init)
@@ -102,9 +103,9 @@ sitemapper.init_app(app)
 STORAGE_BUCKET = "duty_reports"
 supabase = create_client(URL, KEY) if URL and KEY else None
 
-API_KEY = os.environ.get('31b9e69cac7d42388cd07a65fcaae8c4.Dwp57hqv0rzlfd2N')
-MODEL = os.environ.get('AI_MODEL', 'glm-4.6v-flash')
-API_URL = os.environ.get('AI_API_URL', 'https://api.z.ai/api/paas/v4/chat/completions')
+API_KEY = os.environ.get('API_KEY')
+MODEL = os.environ.get('MODEL')
+API_URL = os.environ.get('API_URL')
 
 ZAI_API_KEY = os.environ.get('ZAI_API_KEY', '31b9e69cac7d42388cd07a65fcaae8c4.Dwp57hqv0rzlfd2N')
 ZAI_API_URL = os.environ.get('ZAI_API_URL', 'https://api.z.ai/api/paas/v4/chat/completions')  # example
@@ -136,7 +137,7 @@ def favicon():
 def landing():
     return render_template('landing.html')
 
-@sitemapper.include(lastmod="2026-06-05")
+
 @app.route('/index')
 def index():
     return render_template('index.html')  # landing page (si lazima iwe na sidebar)
